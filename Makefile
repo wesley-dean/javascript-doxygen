@@ -5,6 +5,7 @@ SHELL := /bin/sh
 
 AWK_BIN ?= awk
 SOURCE_FILTER := doxygen-javascript.awk
+DOXYGEN_CONSUMER_CONFIG := doxygen-javascript.conf
 INTEGRATION_CONFIG := test/doxygen/Doxyfile
 INTEGRATION_OUT := test/doxygen/out
 DOXYGEN_JAVASCRIPT_FILTER ?= $(SOURCE_FILTER)
@@ -38,6 +39,8 @@ test-source:
 ## Exercise governed JavaScript fixtures through Doxygen with the selected filter.
 test-doxygen:
 	@test -f "$(DOXYGEN_JAVASCRIPT_FILTER)" || { printf '%s\n' 'Missing JavaScript Doxygen filter' >&2; exit 1; }
+	@test -f "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing JavaScript Doxygen consumer configuration' >&2; exit 1; }
+	@grep -Fxq 'ALIASES += jsyields="@par Yields^^"' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jsyields alias' >&2; exit 1; }
 	@command -v doxygen >/dev/null 2>&1 || { printf '%s\n' 'doxygen is required for make test-doxygen' >&2; exit 1; }
 	$(MAKE) --no-print-directory integration-clean
 	AWK_BIN="$(AWK_BIN)" DOXYGEN_JAVASCRIPT_FILTER="$(abspath $(DOXYGEN_JAVASCRIPT_FILTER))" doxygen "$(INTEGRATION_CONFIG)"
@@ -53,6 +56,11 @@ test-doxygen:
 	grep -R -q '<parameterlist kind="exception">' "$(INTEGRATION_OUT)/xml"
 	grep -R -q '<parametername>TypeError</parametername>' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'not a string' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>Yields</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Type: Record.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Validated records in source order.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'validatedRecords' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'line="6"' "$(INTEGRATION_OUT)/xml"
 
 FORCE:
 

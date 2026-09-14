@@ -6,10 +6,11 @@ with JSDoc-style source documentation translated only where Doxygen needs help.
 
 The maintained filter is `doxygen-javascript.awk`.  It currently supports the
 canonical simple-parameter forms governed by ADR-013 and ADR-014, canonical typed
-`@returns` records governed by ADR-016, and canonical typed-and-described `@throws`
-records governed by ADR-017.  ADR-018 exercises those governed forms through
-Doxygen's JavaScript parser.  Unsupported forms remain unchanged.  The filter does
-not infer JavaScript semantics or claim complete JSDoc coverage.
+`@returns` records governed by ADR-016, canonical typed-and-described `@throws`
+records governed by ADR-017, and canonical typed `@yields` records governed by
+ADR-019.  ADR-018 exercises governed forms through Doxygen's JavaScript parser.
+Unsupported forms remain unchanged.  The filter does not infer JavaScript semantics
+or claim complete JSDoc coverage.
 
 ## Current capability
 
@@ -77,17 +78,41 @@ is translated to:
 @throws TypeError If the identifier is not a string.
 ```
 
+A typed generator-yield contract:
+
+```text
+@yields {Record} Validated records in source order.
+```
+
+is translated to the generated Doxygen-facing command:
+
+```text
+@jsyields Type: Record. Validated records in source order.
+```
+
+`@jsyields` is not maintained JSDoc.  Doxygen consumers that process translated
+`@yields` records must load the checked-in `doxygen-javascript.conf` fragment, which
+defines:
+
+```text
+ALIASES += jsyields="@par Yields^^"
+```
+
+The alias introduces the logical paragraph break inside Doxygen.  The filter itself
+still emits exactly one physical output line for the input `@yields` line.
+
 The maintained JavaScript source remains unchanged.  The filter preserves type and
 default text without interpreting either.  Current default-token support requires
 non-empty text containing neither whitespace nor `]`.  Typed `@throws` support
 requires a compact exception type without whitespace plus a non-empty description.
 Unsupported forms such as dotted property notation, singular `@return`, untyped
-`@returns`, description-only `@throws`, and type-only `@throws` continue to pass
-through unchanged.
+`@returns`, description-only `@throws`, type-only `@throws`, description-only
+`@yields`, and type-only `@yields` continue to pass through unchanged.
 
-Supported translations preserve one output record for each input record.  That
-line correspondence is part of the current Doxygen integration boundary because
-Doxygen associates filtered input with source locations and source-browser anchors.
+All governed transformations preserve one output record for each input record.
+The TAP suite checks this invariant for every fixture.  That line correspondence is
+part of the Doxygen integration boundary because Doxygen associates filtered input
+with source locations and source-browser anchors.
 
 Run the filter with:
 
@@ -123,21 +148,23 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves nine behaviors: ordinary JavaScript passes through
+The current suite proves eleven behaviors: ordinary JavaScript passes through
 unchanged; canonical required parameters translate; optional parameters with and
 without compact documented defaults translate; unsupported dotted property
 notation remains visible unchanged; canonical typed `@returns` records translate;
 singular `@return` remains visible unchanged; canonical typed-and-described
-`@throws` records translate; and unsupported description-only and type-only
-`@throws` forms remain unchanged.  Future documentation translations should grow
-the suite one focused behavior at a time.
+`@throws` records translate; unsupported description-only and type-only `@throws`
+forms remain unchanged; canonical typed `@yields` records translate; and unsupported
+description-only and type-only `@yields` forms remain unchanged.  Every fixture also
+proves that filtering preserves physical line count.
 
 ## JavaScript/Doxygen integration
 
 Filter-level golden output and downstream Doxygen interpretation are separate test
 surfaces.  ADR-018 establishes `test/doxygen/` as the integration surface and uses
 Doxygen's JavaScript parser rather than translating JavaScript into another source
-language.
+language.  ADR-019 extends that integration surface to the alias-backed `Yields`
+representation.
 
 Run the integration suite with either supported AWK implementation:
 
@@ -147,15 +174,16 @@ make test-doxygen AWK_BIN=gawk
 ```
 
 The integration Doxyfile applies `doxygen-javascript.awk` through
-`FILTER_PATTERNS`, generates XML, and verifies semantic output structure for the
-currently governed parameter, return, and exception forms.  CI runs this surface
-separately from the TAP suite so a textual filter regression can be distinguished
-from a downstream Doxygen integration regression.
+`FILTER_PATTERNS`, loads `doxygen-javascript.conf`, generates XML, and verifies
+semantic output structure for governed parameter, return, exception, and yield
+forms.  The yields assertions verify a dedicated `Yields` paragraph plus source
+location evidence for the generator fixture.  CI runs this surface separately from
+the TAP suite so a textual filter regression can be distinguished from a downstream
+Doxygen integration regression.
 
 Generated integration output beneath `test/doxygen/out/` is ephemeral and ignored
-by Git.  Passing integration tests demonstrate only the explicitly exercised
-forms and configuration; they are not evidence of arbitrary JavaScript or JSDoc
-support.
+by Git.  Passing integration tests demonstrate only the explicitly exercised forms
+and configuration; they are not evidence of arbitrary JavaScript or JSDoc support.
 
 ## Project reference documentation
 
@@ -184,13 +212,13 @@ Pages.  ADR-015 governs this self-documentation boundary.
 
 The repository was initialized from `python-doxygen`, so some copied Python files,
 ADRs, tests, and workflow history remain while the project is migrated.  Their
-presence does not mean that `javascript-doxygen` implements Python behavior or
-that those interfaces are supported here.
+presence does not mean that `javascript-doxygen` implements Python behavior or that
+those interfaces are supported here.
 
 The following capabilities remain deliberately deferred:
 
-- complex JSDoc parameter forms and tags beyond the accepted parameter, typed
-  return, and typed exception contracts;
+- complex JSDoc parameter forms and tags beyond the accepted parameter, return,
+  exception, and yield contracts;
 - generated consumer artifacts and checksums;
 - semantic-version release publication; and
 - release-artifact canaries.
@@ -199,8 +227,9 @@ Those capabilities should be enabled only after their JavaScript-specific
 contracts are governed and tested.  ADR-012 records the bootstrap boundary,
 ADR-013 governs required parameters, ADR-014 governs optional parameters, ADR-015
 governs project self-documentation, ADR-016 governs canonical typed return
-translation, ADR-017 governs canonical typed exception translation, and ADR-018
-governs JavaScript/Doxygen integration testing.
+translation, ADR-017 governs canonical typed exception translation, ADR-018 governs
+JavaScript/Doxygen integration testing, and ADR-019 governs alias-backed typed yield
+translation.
 
 ## Coding standards and governance
 
@@ -209,9 +238,9 @@ This repository adopts the pinned shared standards snapshot under
 verified archive digest.  Applicable imported standards are project requirements;
 accepted repository-specific ADRs and explicit local policy may refine them.
 
-Do not edit files beneath `doc/standards/` locally.  Shared-standard changes
-belong upstream in `wesley-dean/coding_standards`; repository-specific decisions
-belong in this repository's ADRs.
+Do not edit files beneath `doc/standards/` locally.  Shared-standard changes belong
+upstream in `wesley-dean/coding_standards`; repository-specific decisions belong in
+this repository's ADRs.
 
 Maintained JavaScript documentation is governed by
 `doc/standards/javascript/documentation-standard.md`.  That standard establishes
@@ -225,14 +254,14 @@ boundary between the shared maintained-source contract and filter-specific
 translation behavior.
 
 Before changing parser boundaries, JSDoc translation behavior, test contracts,
-portability, documentation publication, or release interfaces, review
-`AGENTS.md`, the applicable imported standards, all ADRs in `doc/adr/`, and
-`doc/decisions.md`.
+portability, documentation publication, consumer Doxygen configuration, or release
+interfaces, review `AGENTS.md`, the applicable imported standards, all ADRs in
+`doc/adr/`, and `doc/decisions.md`.
 
 ## License
 
-This project is licensed under the Creative Commons License 1.0 Universal
-License.  See [LICENSE](LICENSE) for details.
+This project is licensed under the Creative Commons License 1.0 Universal License.
+See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
