@@ -8,10 +8,11 @@ The maintained filter is `doxygen-javascript.awk`.  It currently supports the
 canonical simple-parameter forms governed by ADR-013 and ADR-014, canonical typed
 `@returns` records governed by ADR-016, canonical typed-and-described `@throws`
 records governed by ADR-017, canonical typed `@yields` records governed by ADR-019,
-and native-compatible `@deprecated` and `@see` records governed by ADR-020.
-ADR-018 exercises governed forms through Doxygen's JavaScript parser.  Unsupported
-forms remain unchanged.  The filter does not infer JavaScript semantics or claim
-complete JSDoc coverage.
+native-compatible `@deprecated` and `@see` records governed by ADR-020, and
+canonical virtual `@typedef` records governed by ADR-021.  ADR-018 exercises
+governed forms through Doxygen's JavaScript parser.  Unsupported forms remain
+unchanged.  The filter does not infer JavaScript semantics or claim complete JSDoc
+coverage.
 
 ## Current capability
 
@@ -115,13 +116,34 @@ commands with compatible semantics.  Native-compatible support remains
 form-specific and evidence-driven; a similarly named JSDoc and Doxygen command is
 not automatically considered supported.
 
+A named reusable virtual type:
+
+```text
+@typedef {Object} User
+```
+
+is translated to a generated alias invocation on the same physical line:
+
+```text
+@jstypedef{jsdocvirtualtypeuulslelr||User||Object}
+```
+
+The maintained source remains ordinary JSDoc.  `@jstypedef` and the encoded page
+label are generated representation only.  The consumer configuration expands the
+record into a Doxygen related page titled `User`, preserves surrounding prose,
+and displays the maintained base type.  The page provides a named Doxygen `@ref`
+target without fabricating a JavaScript class, struct, interface, typedef
+declaration, or other runtime symbol.
+
 The maintained JavaScript source remains unchanged.  The filter preserves type and
 default text without interpreting either.  Current default-token support requires
 non-empty text containing neither whitespace nor `]`.  Typed `@throws` support
 requires a compact exception type without whitespace plus a non-empty description.
-Unsupported forms such as dotted property notation, singular `@return`, untyped
-`@returns`, description-only `@throws`, type-only `@throws`, description-only
-`@yields`, and type-only `@yields` continue to pass through unchanged.
+Virtual typedef names currently require simple JavaScript identifiers.  Unsupported
+forms such as dotted property notation, singular `@return`, untyped `@returns`,
+description-only `@throws`, type-only `@throws`, description-only `@yields`,
+type-only `@yields`, dotted typedef names, and untyped typedefs continue to pass
+through unchanged.
 
 All governed transformations preserve one output record for each input record.
 The TAP suite checks this invariant for every fixture.  That line correspondence is
@@ -162,16 +184,18 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves twelve behaviors: ordinary JavaScript passes through
+The current suite proves fourteen behaviors: ordinary JavaScript passes through
 unchanged; canonical required parameters translate; optional parameters with and
 without compact documented defaults translate; unsupported dotted property
 notation remains visible unchanged; canonical typed `@returns` records translate;
 singular `@return` remains visible unchanged; canonical typed-and-described
 `@throws` records translate; unsupported description-only and type-only `@throws`
 forms remain unchanged; canonical typed `@yields` records translate; unsupported
-description-only and type-only `@yields` forms remain unchanged; and
-native-compatible `@deprecated` and `@see` records pass through unchanged.  Every
-fixture also proves that filtering preserves physical line count.
+description-only and type-only `@yields` forms remain unchanged; native-compatible
+`@deprecated` and `@see` records pass through unchanged; canonical virtual
+`@typedef` records translate to related-page aliases; and unsupported typedef
+forms remain unchanged.  Every fixture also proves that filtering preserves
+physical line count.
 
 ## JavaScript/Doxygen integration
 
@@ -179,8 +203,9 @@ Filter-level golden output and downstream Doxygen interpretation are separate te
 surfaces.  ADR-018 establishes `test/doxygen/` as the integration surface and uses
 Doxygen's JavaScript parser rather than translating JavaScript into another source
 language.  ADR-019 extends that integration surface to the alias-backed `Yields`
-representation, and ADR-020 uses the same surface to prove native-compatible tag
-semantics.
+representation, ADR-020 uses the same surface to prove native-compatible tag
+semantics, and ADR-021 uses it to prove named virtual typedef pages and cross-
+reference resolution.
 
 Run the integration suite with either supported AWK implementation:
 
@@ -192,12 +217,14 @@ make test-doxygen AWK_BIN=gawk
 The integration Doxyfile applies `doxygen-javascript.awk` through
 `FILTER_PATTERNS`, loads `doxygen-javascript.conf`, generates XML, and verifies
 semantic output structure for governed parameter, return, exception, yield,
-deprecation, and see-also forms.  The yields assertions verify a dedicated `Yields`
-paragraph plus source-location evidence for the generator fixture.  Native-tag
-assertions verify that unchanged `@deprecated` and `@see` records are interpreted
-by Doxygen rather than merely surviving the filter.  CI runs this surface
-separately from the TAP suite so a textual filter regression can be distinguished
-from a downstream Doxygen integration regression.
+deprecation, see-also, and virtual typedef forms.  The yields assertions verify a
+dedicated `Yields` paragraph plus source-location evidence for the generator
+fixture.  Native-tag assertions verify that unchanged `@deprecated` and `@see`
+records are interpreted by Doxygen rather than merely surviving the filter.  The
+typedef assertions verify a named related page, retained source prose and base
+type, and a resolved Doxygen `@ref` to the generated virtual type.  CI runs this
+surface separately from the TAP suite so a textual filter regression can be
+distinguished from a downstream Doxygen integration regression.
 
 Generated integration output beneath `test/doxygen/out/` is ephemeral and ignored
 by Git.  Passing integration tests demonstrate only the explicitly exercised forms
@@ -235,7 +262,9 @@ those interfaces are supported here.
 
 The following capabilities remain deliberately deferred:
 
-- complex JSDoc parameter forms and tags beyond the explicitly accepted contracts;
+- complex JSDoc parameter forms and tags beyond the explicitly accepted contracts,
+  including `@property`, `@callback`, and general `@type` handling;
+- automatic linking of arbitrary type expressions to virtual typedef pages;
 - generated consumer artifacts and checksums;
 - semantic-version release publication; and
 - release-artifact canaries.
@@ -246,8 +275,8 @@ ADR-013 governs required parameters, ADR-014 governs optional parameters, ADR-01
 governs project self-documentation, ADR-016 governs canonical typed return
 translation, ADR-017 governs canonical typed exception translation, ADR-018
 governs JavaScript/Doxygen integration testing, ADR-019 governs alias-backed typed
-yield translation, and ADR-020 governs evidence-driven native-compatible tag
-pass-through.
+yield translation, ADR-020 governs evidence-driven native-compatible tag
+pass-through, and ADR-021 governs related-page representation for virtual typedefs.
 
 ## Coding standards and governance
 
@@ -274,8 +303,9 @@ translation behavior.
 
 Before changing parser boundaries, JSDoc translation behavior, native-compatible
 support claims, test contracts, portability, documentation publication, consumer
-Doxygen configuration, or release interfaces, review `AGENTS.md`, the applicable
-imported standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.
+Doxygen configuration, virtual-type representation, or release interfaces, review
+`AGENTS.md`, the applicable imported standards, all ADRs in `doc/adr/`, and
+`doc/decisions.md`.
 
 ## License
 

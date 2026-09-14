@@ -123,10 +123,42 @@ Doxygen integration evidence before the repository claims it as supported.  Do
 not normalize `@see` to `@sa` or introduce an alias when Doxygen already accepts
 the maintained JSDoc command directly.
 
-Unsupported parameter forms remain unchanged.  Dotted property names, optional
-dotted properties, rest parameters, destructured parameters, typedefs, callbacks,
-properties, modules, inline tags, and other JSDoc forms must be claimed only when
-the filter has corresponding accepted governance and executable evidence.
+## Virtual Typedefs
+
+ADR-021 adds the canonical virtual typedef form:
+
+```text
+@typedef {Type} Name
+```
+
+for simple JavaScript identifiers.  The maintained source remains ordinary JSDoc.
+The filter translates the typedef record to a generated `@jstypedef` alias
+invocation on the same physical source line.  The alias expands inside Doxygen to
+a related page whose visible title is the exact maintained typedef name and whose
+body retains both surrounding JSDoc prose and the maintained base type.
+
+The related-page representation is deliberate.  A JSDoc typedef may describe a
+reusable documentation type that has no dedicated runtime JavaScript declaration.
+The generated representation therefore must not fabricate a JavaScript class,
+struct, interface, function, variable, or native typedef declaration merely to
+create a Doxygen symbol.
+
+Doxygen consumers that process translated typedefs must load
+`doxygen-javascript.conf` or an exactly equivalent alias.  Generated page labels
+are deterministic implementation details used by Doxygen for navigation and
+`@ref` targets; they are not maintained-source API and source authors should not be
+required to write or know them.
+
+The initial typedef boundary does not establish `@property`, `@callback`, general
+`@type`, or automatic linking of arbitrary type expressions to virtual typedef
+pages.  Those constructs remain valid maintained JSDoc under the shared standard,
+but repository support requires separate governance and executable evidence.
+
+Unsupported parameter and typedef forms remain unchanged.  Dotted property names,
+optional dotted properties, rest parameters, destructured parameters, unsupported
+typedef names, callbacks, properties, modules, inline tags, general `@type`, and
+other JSDoc forms must be claimed only when the filter has corresponding accepted
+governance and executable evidence.
 
 ## JavaScript/Doxygen integration
 
@@ -139,8 +171,9 @@ The integration suite generates Doxygen XML and checks semantic structure rather
 than relying only on filtered source text.  The contract verifies named parameter
 documentation, visible optional/default prose, return documentation in a Doxygen
 return section, exception documentation in a Doxygen exception parameter list, a
-dedicated alias-backed `Yields` paragraph under ADR-019, and native deprecation and
-see-also structure under ADR-020.
+dedicated alias-backed `Yields` paragraph under ADR-019, native deprecation and
+see-also structure under ADR-020, and a named related-page representation for
+virtual typedefs under ADR-021.
 
 Use:
 
@@ -158,9 +191,9 @@ All current governed transformations and native-compatible forms preserve one
 physical output record for every input record.  `test/run-tests.sh` checks physical
 line-count equality for every fixture.  That line correspondence is part of the
 integration boundary because Doxygen associates filtered input with source
-locations and source-browser anchors.  ADR-019 uses Doxygen alias expansion
-specifically so the logical break needed for a `Yields` paragraph does not become
-a physical filter line.
+locations and source-browser anchors.  ADR-019 and ADR-021 use Doxygen alias
+expansion so logical documentation structure does not require the filter to add
+physical lines.
 
 A future representation that adds or removes physical lines requires a new
 decision and integration evidence; it must not be inherited mechanically from a
@@ -168,7 +201,8 @@ sibling language project.
 
 Passing integration tests establish only the explicit forms and Doxygen
 configuration exercised by the suite.  They do not establish arbitrary JavaScript
-syntax support, complete JSDoc translation, or blanket native compatibility.
+syntax support, complete JSDoc translation, blanket native compatibility, or
+semantic type inference.
 
 ## Repository self-documentation
 
@@ -185,7 +219,7 @@ The generated ADR landing page and reference output are not maintained source.
 
 Successful self-documentation does not expand the supported JSDoc surface and does
 not substitute for the JavaScript/Doxygen integration evidence governed by
-ADR-018, ADR-019, and ADR-020.
+ADR-018 through ADR-021.
 
 Maintained AWK implementation source is governed by:
 

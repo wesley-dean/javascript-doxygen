@@ -57,6 +57,53 @@ function is_jsdoc_close(line) {
   return line ~ /^[[:space:]]*\*\/[[:space:]]*$/
 }
 
+## @fn virtual_type_label(name)
+## @brief Encodes a JavaScript identifier as a portable Doxygen page label.
+## @details
+## Encodes every identifier character into a lowercase alphanumeric token so
+## labels remain deterministic and distinguish JavaScript case without requiring
+## Doxygen case-sensitive page names.  `u` prefixes uppercase letters, `l`
+## prefixes lowercase letters, `d` prefixes digits, `n0` represents underscore,
+## and `s0` represents dollar sign.
+##
+## @param name Simple JavaScript identifier to encode.
+## @local i Current one-based character position.
+## @local character Current identifier character.
+## @local label Encoded Doxygen page label.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A lowercase alphanumeric page label for a supported identifier;
+## otherwise an empty string.
+function virtual_type_label(name,    i, character, label) {
+  label = "jsdocvirtualtype"
+
+  for (i = 1; i <= length(name); i++) {
+    character = substr(name, i, 1)
+
+    if (character ~ /^[A-Z]$/) {
+      label = label "u" tolower(character)
+    } else if (character ~ /^[a-z]$/) {
+      label = label "l" character
+    } else if (character ~ /^[0-9]$/) {
+      label = label "d" character
+    } else if (character == "_") {
+      label = label "n0"
+    } else if (character == "$") {
+      label = label "s0"
+    } else {
+      return ""
+    }
+  }
+
+  return label
+}
+
 ## @fn translate_param(line)
 ## @brief Translates one governed JSDoc `@param` record.
 ## @details
@@ -210,7 +257,7 @@ function translate_returns(line,    prefix, work, type, description) {
 ## @par STDERR
 ## Nothing is written to STDERR.
 ##
-## @returns A translated Doxygen-facing record when the governed form matches;
+## @returns A translated Doxygen-facing record when a governed form matches;
 ## otherwise the original record unchanged.
 function translate_throws(line,    prefix, work, type, description) {
   if (line !~ /^[[:space:]]*\*[[:space:]]+@throws[[:space:]]+\{[^}[:space:]]+\}[[:space:]]+.+$/) {
@@ -275,6 +322,60 @@ function translate_yields(line,    prefix, work, type, description) {
   return prefix "* @jsyields Type: " type ". " description
 }
 
+## @fn translate_typedef(line)
+## @brief Translates one canonical virtual JSDoc `@typedef` record.
+## @details
+## Recognizes `@typedef {Type} Name` when Name is a simple JavaScript identifier.
+## The generated `@jstypedef` command expands through consumer Doxygen aliases to
+## a related page, giving the virtual documentation type a named link target
+## without inventing a JavaScript declaration.  The base type remains textual.
+##
+## @param line JSDoc source record to translate.
+## @local prefix Leading indentation retained from the source record.
+## @local work Scratch copy used while extracting fields.
+## @local type Maintained JSDoc base type without surrounding braces.
+## @local name Maintained virtual type name.
+## @local label Deterministic generated Doxygen page label.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A translated alias-backed record when the governed form matches;
+## otherwise the original record unchanged.
+function translate_typedef(line,    prefix, work, type, name, label) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@typedef[[:space:]]+\{[^}]+\}[[:space:]]+[A-Za-z_$][A-Za-z0-9_$]*[[:space:]]*$/) {
+    return line
+  }
+
+  prefix = line
+  sub(/\*.*/, "", prefix)
+
+  work = line
+  sub(/^[[:space:]]*\*[[:space:]]+@typedef[[:space:]]+\{/, "", work)
+
+  type = work
+  sub(/\}.*/, "", type)
+
+  if (type ~ /\|\|/) {
+    return line
+  }
+
+  name = work
+  sub(/^[^}]*\}[[:space:]]+/, "", name)
+  sub(/[[:space:]]*$/, "", name)
+
+  label = virtual_type_label(name)
+  if (label == "") {
+    return line
+  }
+
+  return prefix "* @jstypedef{" label "||" name "||" type "}"
+}
+
 ## @rule filter_source
 ## @brief Preserves JavaScript source while translating governed JSDoc records.
 ##
@@ -304,5 +405,6 @@ function translate_yields(line,    prefix, work, type, description) {
   line = translate_param($0)
   line = translate_returns(line)
   line = translate_throws(line)
-  print translate_yields(line)
+  line = translate_yields(line)
+  print translate_typedef(line)
 }

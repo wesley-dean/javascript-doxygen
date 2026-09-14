@@ -41,6 +41,7 @@ test-doxygen:
 	@test -f "$(DOXYGEN_JAVASCRIPT_FILTER)" || { printf '%s\n' 'Missing JavaScript Doxygen filter' >&2; exit 1; }
 	@test -f "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing JavaScript Doxygen consumer configuration' >&2; exit 1; }
 	@grep -Fxq 'ALIASES += jsyields="@par Yields^^"' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jsyields alias' >&2; exit 1; }
+	@grep -Fxq 'ALIASES += jstypedef{3||}="@page \1 \2^^@par JSDoc virtual type^^Base type: \3."' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jstypedef alias' >&2; exit 1; }
 	@command -v doxygen >/dev/null 2>&1 || { printf '%s\n' 'doxygen is required for make test-doxygen' >&2; exit 1; }
 	$(MAKE) --no-print-directory integration-clean
 	AWK_BIN="$(AWK_BIN)" DOXYGEN_JAVASCRIPT_FILTER="$(abspath $(DOXYGEN_JAVASCRIPT_FILTER))" doxygen "$(INTEGRATION_CONFIG)"
@@ -65,6 +66,12 @@ test-doxygen:
 	grep -R -q 'Use formatValue instead.' "$(INTEGRATION_OUT)/xml"
 	grep -R -q '<simplesect kind="see">' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'formatValue' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<compoundname>jsdocvirtualtypeuulslelr</compoundname>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<title>User</title>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'JSDoc virtual type' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Base type: Object.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Represents a user record used by formatters.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<ref refid="jsdocvirtualtypeuulslelr"' "$(INTEGRATION_OUT)/xml"
 
 FORCE:
 
