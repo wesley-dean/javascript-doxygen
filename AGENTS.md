@@ -9,16 +9,16 @@ dialect.
 
 The maintained filter is `doxygen-javascript.awk`.
 
-The current implementation translates only the accepted simple-parameter JSDoc
-forms governed by ADR-013 and ADR-014, canonical typed `@returns` records governed
-by ADR-016, canonical typed-and-described `@throws` records governed by ADR-017,
-and canonical typed `@yields` records governed by ADR-019.  ADR-018 exercises
-governed forms through Doxygen's JavaScript parser, and ADR-020 establishes
-native-compatible pass-through for proven `@deprecated` and `@see` forms.
-Unsupported JSDoc constructs remain visible unchanged.  Do not claim broader
-JSDoc translation, native compatibility, JavaScript semantic analysis, generated
-consumer artifacts, or release support until executable evidence and governing
-decisions exist.
+The current implementation translates the accepted simple-parameter JSDoc forms
+governed by ADR-013 and ADR-014, canonical typed `@returns` records governed by
+ADR-016, canonical typed-and-described `@throws` records governed by ADR-017,
+canonical typed `@yields` records governed by ADR-019, and canonical virtual
+`@typedef` records governed by ADR-021.  ADR-018 exercises governed forms through
+Doxygen's JavaScript parser, and ADR-020 establishes native-compatible pass-through
+for proven `@deprecated` and `@see` forms.  Unsupported JSDoc constructs remain
+visible unchanged.  Do not claim broader JSDoc translation, native compatibility,
+JavaScript semantic analysis, generated consumer artifacts, or release support
+until executable evidence and governing decisions exist.
 
 ## Governing Documentation
 
@@ -27,9 +27,9 @@ Before changing the repository, review `README.md`, this file,
 every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
-compatibility, documentation-publication, integration, consumer-configuration, or
-release changes require an ADR unless existing governance already covers the
-decision.
+compatibility, documentation-publication, integration, consumer-configuration,
+virtual-type representation, or release changes require an ADR unless existing
+governance already covers the decision.
 
 Files under `doc/standards/` are governing project requirements when applicable.
 General and cross-cutting standards apply where relevant; language-specific
@@ -75,12 +75,15 @@ already-governed forms.  ADR-019 adds canonical typed `@yields` translation thro
 a line-preserving generated `@jsyields` command plus a required Doxygen alias.
 ADR-020 establishes that canonical JSDoc records that are already semantically and
 syntactically compatible with Doxygen should pass through unchanged when focused
-TAP and integration evidence prove that compatibility.
+TAP and integration evidence prove that compatibility.  ADR-021 represents
+canonical virtual JSDoc typedefs as Doxygen related pages so they remain named and
+cross-referenceable without fabricating JavaScript declarations.
 
-Supported parameter names remain simple JavaScript identifiers.  The filter keeps
-type expressions and supported optional defaults as textual documentation data
-rather than interpreting them as JavaScript semantics.  Compact defaults must be
-non-empty and contain neither whitespace nor `]` in the current grammar.
+Supported parameter and virtual typedef names remain simple JavaScript identifiers.
+The filter keeps type expressions and supported optional defaults as textual
+documentation data rather than interpreting them as JavaScript semantics.  Compact
+defaults must be non-empty and contain neither whitespace nor `]` in the current
+grammar.
 
 Canonical typed returns use `@returns {Type} Description.` and are emitted as
 `@returns Description. Type: Type.`.  Canonical typed exceptions use
@@ -107,17 +110,33 @@ unchanged.  Do not normalize `@see` to `@sa`, wrap native-compatible tags in ali
 or claim another same-named JSDoc/Doxygen tag is supported without focused
 pass-through and downstream semantic evidence.
 
+Canonical virtual typedefs use `@typedef {Type} Name`.  ADR-021 requires the
+filter to emit a generated `@jstypedef` alias invocation on the same physical line.
+The alias expands to a Doxygen related page whose visible title is the exact JSDoc
+typedef name.  The page is a documentation entity, not a runtime JavaScript class,
+struct, interface, function, variable, or native typedef declaration.  Do not
+synthesize fake JavaScript declarations to create documentation symbols.
+
+Virtual typedef page labels are deterministic generated identifiers.  Maintained
+source authors SHALL NOT write or duplicate those labels.  Generated labels use a
+lowercase alphanumeric encoding so JavaScript case-sensitive identifiers remain
+distinct without relying on Doxygen page-name case behavior.  Consumers may use the
+generated labels as Doxygen `@ref` targets where the generated representation needs
+cross-references.
+
 The singular JSDoc synonym `@return`, untyped returns, typed returns without
 descriptions, description-only `@throws`, type-only `@throws`, throws types with
-whitespace, description-only `@yields`, type-only `@yields`, continuation records,
-dotted properties, optional dotted properties, rest parameters, destructured
-parameter documentation, and one-line JSDoc blocks remain unsupported and should
-pass through visibly.
+whitespace, description-only `@yields`, type-only `@yields`, unsupported typedef
+forms, continuation records, dotted properties, optional dotted properties, rest
+parameters, destructured parameter documentation, `@property`, `@callback`,
+general `@type`, and one-line JSDoc blocks remain unsupported unless a later
+accepted decision governs them.
 
 Future JSDoc support should remain narrow and evidence-driven.  Prefer visible
 unsupported syntax to speculative semantic claims.  Do not add JavaScript parsing,
-type inference, inferred behavior, broad JSDoc semantics, or blanket native-tag
-support without explicit governance and focused tests.
+type inference, inferred behavior, broad JSDoc semantics, blanket native-tag
+support, or synthetic runtime declarations without explicit governance and focused
+tests.
 
 All governed filter transformations preserve one physical output record for every
 input record.  `test/run-tests.sh` verifies physical line-count equality for every
@@ -154,14 +173,16 @@ typed `@returns` translation; visible pass-through of singular `@return`;
 canonical typed-and-described `@throws` translation; visible pass-through of
 description-only and type-only throws forms; canonical typed `@yields`
 translation; visible pass-through of description-only and type-only yields forms;
-and unchanged pass-through of accepted native-compatible `@deprecated` and `@see`
-records.  Add a focused fixture and expected output when adding each new supported
-translation or native-compatible behavior.  Tests should protect externally
-observable behavior rather than internal helper structure.
+unchanged pass-through of accepted native-compatible `@deprecated` and `@see`
+records; canonical virtual typedef translation; and visible pass-through of
+unsupported typedef forms.  Add a focused fixture and expected output when adding
+each new supported translation or native-compatible behavior.  Tests should
+protect externally observable behavior rather than internal helper structure.
 
 ADR-018 adds a separate downstream integration surface beneath `test/doxygen/`.
 ADR-019 extends that surface with the alias-backed yields representation.  ADR-020
-uses the same surface to prove native-compatible semantics.  Use:
+uses the same surface to prove native-compatible semantics.  ADR-021 adds named
+related-page and cross-reference evidence for virtual typedefs.  Use:
 
 ```sh
 make test-doxygen AWK_BIN=mawk
@@ -171,14 +192,16 @@ make test-doxygen AWK_BIN=gawk
 The integration configuration parses `.js` input as JavaScript, applies the
 maintained filter through Doxygen's input-filter mechanism, loads
 `doxygen-javascript.conf`, generates XML, and checks semantic structure for
-governed parameter, return, exception, yield, deprecation, and see-also forms.
-The yields integration assertions SHALL verify both a dedicated `Yields` paragraph
-and source-location evidence for the generator fixture.  Native-compatible tag
-assertions SHALL prove that unchanged source records are interpreted by Doxygen as
-the intended semantic structures.  CI SHALL exercise this path under both
-portable-AWK implementations.  Keep this surface separate from `make test` so
-textual filter failures and downstream Doxygen failures remain independently
-diagnosable.
+governed parameter, return, exception, yield, deprecation, see-also, and virtual
+typedef forms.  The yields integration assertions SHALL verify both a dedicated
+`Yields` paragraph and source-location evidence for the generator fixture.
+Native-compatible tag assertions SHALL prove that unchanged source records are
+interpreted by Doxygen as the intended semantic structures.  Virtual typedef
+assertions SHALL prove that Doxygen creates a named related page, retains the
+maintained prose and base type, and resolves a reference to the generated page
+label.  CI SHALL exercise this path under both portable-AWK implementations.  Keep
+this surface separate from `make test` so textual filter failures and downstream
+Doxygen failures remain independently diagnosable.
 
 ## Project Self-Documentation
 
@@ -214,5 +237,6 @@ add no-op compatibility targets merely to make copied workflows succeed.
 Keep changes surgical and reviewable.  Accuracy is more important than apparent
 completeness.  Distinguish implemented behavior from planned behavior, state
 uncertainty explicitly, and do not widen the parser, generated representation,
-native-compatible support boundary, consumer configuration, or documentation
-boundary without governance and focused executable evidence.
+native-compatible support boundary, virtual-type entity model, consumer
+configuration, or documentation boundary without governance and focused executable
+evidence.
