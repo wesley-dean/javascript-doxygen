@@ -61,6 +61,10 @@ test-doxygen:
 	grep -R -q 'Validated records in source order.' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'validatedRecords' "$(INTEGRATION_OUT)/xml"
 	grep -R -q 'line="6"' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<xreftitle>Deprecated</xreftitle>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Use formatValue instead.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<simplesect kind="see">' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'formatValue' "$(INTEGRATION_OUT)/xml"
 
 FORCE:
 
