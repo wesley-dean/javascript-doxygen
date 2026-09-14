@@ -11,7 +11,8 @@ GENERATE_XML           = YES
 XML_OUTPUT             = xml
 INPUT                  = test/doxygen/fixture.js \
                          test/doxygen/yields.js \
-                         test/doxygen/native-tags.js
+                         test/doxygen/native-tags.js \
+                         test/doxygen/native-typedef.js
 RECURSIVE              = NO
 FILE_PATTERNS          = *.js
 EXTENSION_MAPPING      = js=JavaScript
