@@ -549,21 +549,21 @@ function translate_property(line,    prefix, work, type, name, description) {
     next
   }
 
-  line = translate_param($0)
-  line = translate_returns(line)
-  line = translate_throws(line)
-  line = translate_yields(line)
-  line = translate_callback(line)
+  filtered_line = translate_param($0)
+  filtered_line = translate_returns(filtered_line)
+  filtered_line = translate_throws(filtered_line)
+  filtered_line = translate_yields(filtered_line)
+  filtered_line = translate_callback(filtered_line)
 
-  translated_typedef = translate_typedef(line)
-  if (translated_typedef != line) {
+  translated_typedef = translate_typedef(filtered_line)
+  if (translated_typedef != filtered_line) {
     in_virtual_typedef = 1
   }
-  line = translated_typedef
+  filtered_line = translated_typedef
 
   if (in_virtual_typedef) {
-    line = translate_property(line)
+    filtered_line = translate_property(filtered_line)
   }
 
-  print line
+  print filtered_line
 }

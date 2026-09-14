@@ -4,6 +4,7 @@ SHELL := /bin/sh
 .SHELLFLAGS := -eu -c
 
 AWK_BIN ?= awk
+AWK_SOURCES := $(wildcard *.awk)
 SOURCE_FILTER := doxygen-javascript.awk
 DOXYGEN_CONSUMER_CONFIG := doxygen-javascript.conf
 INTEGRATION_CONFIG := test/doxygen/Doxyfile
@@ -41,7 +42,7 @@ VERSION ?= $(shell git describe --tags --always 2>/dev/null || printf '0.0.0-dev
 BUILD_COMMIT ?= $(shell git rev-parse --short=12 HEAD 2>/dev/null || printf 'unknown')
 BUILD_DATE ?= $(shell git show -s --format=%cI HEAD 2>/dev/null || printf 'unknown')
 
-.PHONY: all adr-index build checksums clean deps deps-check deps-docs deps-docs-check dist-clean distclean docs docs-canary docs-clean integration-clean test test-dist test-dist-doxygen test-doxygen test-source verify-bashdeps verify-build-deps verify-checksums FORCE
+.PHONY: all adr-index build check checksums clean deps deps-check deps-docs deps-docs-check dist-clean distclean docs docs-canary docs-clean integration-clean test test-dist test-dist-doxygen test-doxygen test-source verify-bashdeps verify-build-deps verify-checksums FORCE
 
 all: deps
 	$(MAKE) --no-print-directory build
@@ -136,6 +137,14 @@ verify-checksums: $(DIST_CHECKSUMS)
 			printf '%s\n' 'No SHA-256 verification command is available for build checksums' >&2; \
 			exit 1; \
 		fi; \
+	done
+
+## Run GNU awk lint against maintained root AWK sources.
+check:
+	@command -v gawk >/dev/null 2>&1 || { printf '%s\n' 'gawk is required for make check' >&2; exit 1; }
+	@for source in $(AWK_SOURCES); do \
+		printf '%s\n' "Linting $$source"; \
+		gawk --lint=fatal -f "$$source" </dev/null >/dev/null; \
 	done
 
 test: test-source
@@ -296,7 +305,7 @@ adr-index:
 	trap 'rm -f "$$tmp"' EXIT; \
 	bash "$(ADRCTL)" generate toc -i "$(ADR_INDEX_INTRO)" -o "$(ADR_INDEX_OUTRO)" >"$$tmp"; \
 	mv "$$tmp" "$(ADR_INDEX_FILE)"; \
-	trap - EXIT
+	trap - EXIT HUP INT TERM
 
 ## Generate stable project reference documentation with pinned released filters.
 docs: deps-docs-check
