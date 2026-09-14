@@ -1,5 +1,16 @@
 # Architecture Decisions
 
+## Shared coding standards adoption
+
+ADR-011 adopts the complete `coding_standards@v1.0.3` release as a managed,
+verified snapshot beneath `doc/standards/`, with provenance recorded in
+`.codingstandardrc`.  Applicable imported standards are repository governance,
+while accepted local ADRs and explicit local policy remain the mechanism for
+visible refinements or exceptions; imported files are not edited locally.  The
+complete library is committed for inspectability even though presence does not
+imply applicability, and no permanent standards-update machinery is installed.
+See [ADR-011](adr/ADR-011-adopt-shared-coding-standards.md).
+
 ## Capability scope and epistemic honesty
 
 The project distinguishes implemented behavior from planned behavior and makes

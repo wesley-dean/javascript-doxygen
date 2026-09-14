@@ -184,18 +184,33 @@ integration fixture.
 
 ## Documentation and governance
 
-The canonical Python documentation contract is maintained in
-`wesley-dean/coding_standards/standards/python/documentation-standard.md`.
-`doc/documentation-standard.md` records the repository's adoption point.
+This repository adopts released shared standards from
+`wesley-dean/coding_standards`.  The complete pinned snapshot is committed under
+`doc/standards/`, and `.codingstandardrc` records the concrete release and
+verified archive digest.  Applicable standards are governing project requirements;
+accepted repository-specific ADRs and explicit local policy may refine or
+supersede them.  Presence does not imply applicability, and content under
+`doc/standards/examples/` is illustrative unless a governing standard states
+otherwise.
 
-The maintained AWK filter follows the checked-in
-`doc/awk-documentation-standard.md`, whose canonical upstream is
-`wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
+The currently applicable Python documentation contract is materialized at
+`doc/standards/python/documentation-standard.md`.  `doc/documentation-standard.md`
+records this repository's adoption point and project-specific relationship to that
+standard.
+
+Maintained AWK source follows
+`doc/standards/awk/documentation-standard.md`.  The older
+`doc/awk-documentation-standard.md` path remains from the copied baseline and is
+not an independently mutable standards authority.
+
+Do not edit files beneath `doc/standards/` locally.  Shared-standard changes belong
+upstream; repository-specific exceptions belong in accepted local governance.
+ADR-011 records the standards-adoption decision.
 
 Before changing parser boundaries, generated representation, portability,
 documentation publication, or the artifact contract, review `AGENTS.md`, the
-documentation standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.
-Accepted ADRs govern the implementation.
+applicable standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.  Accepted
+ADRs govern the implementation.
 
 ## License
 
