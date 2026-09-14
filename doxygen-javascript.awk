@@ -57,19 +57,27 @@ function is_jsdoc_close(line) {
   return line ~ /^[[:space:]]*\*\/[[:space:]]*$/
 }
 
-## @fn translate_required_param(line)
-## @brief Translates one canonical required JSDoc `@param` record.
+## @fn translate_param(line)
+## @brief Translates one governed JSDoc `@param` record.
 ## @details
-## Recognizes only the governed form `@param {Type} name - Description.` where
-## `name` is a simple JavaScript identifier.  The type expression is preserved as
-## visible Doxygen-facing prose rather than interpreted semantically.
+## Recognizes canonical required parameters, optional parameters, and optional
+## parameters with documented defaults when the parameter name is a simple
+## JavaScript identifier.  Type and default expressions are preserved textually
+## as visible Doxygen-facing prose rather than interpreted semantically.
 ##
 ## @param line JSDoc source record to translate.
 ## @local prefix Leading indentation retained from the source record.
 ## @local work Scratch copy used while extracting fields.
 ## @local type Maintained JSDoc type expression without surrounding braces.
-## @local name Required parameter identifier.
+## @local token Maintained parameter token between the type and description.
+## @local name Parameter identifier emitted to Doxygen.
 ## @local description Maintained parameter description.
+## @local body Optional parameter token without surrounding brackets.
+## @local default_value Maintained documented default expression, when present.
+## @local equals_index Position of the first equals sign in an optional token.
+## @local optional 1 when the parameter is optional; otherwise 0.
+## @local has_default 1 when an optional parameter documents a default.
+## @local result Doxygen-facing translated record.
 ##
 ## @par STDIN
 ## Nothing is read directly from STDIN.
@@ -78,10 +86,10 @@ function is_jsdoc_close(line) {
 ## @par STDERR
 ## Nothing is written to STDERR.
 ##
-## @returns A translated Doxygen-facing record when the governed form matches;
+## @returns A translated Doxygen-facing record when a governed form matches;
 ## otherwise the original record unchanged.
-function translate_required_param(line,    prefix, work, type, name, description) {
-  if (line !~ /^[[:space:]]*\*[[:space:]]+@param[[:space:]]+\{[^}]+\}[[:space:]]+[A-Za-z_$][A-Za-z0-9_$]*[[:space:]]+-[[:space:]]+.+$/) {
+function translate_param(line,    prefix, work, type, token, name, description, body, default_value, equals_index, optional, has_default, result) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@param[[:space:]]+\{[^}]+\}[[:space:]]+[^[:space:]]+[[:space:]]+-[[:space:]]+.+$/) {
     return line
   }
 
@@ -96,13 +104,47 @@ function translate_required_param(line,    prefix, work, type, name, description
 
   sub(/^[^}]*\}[[:space:]]+/, "", work)
 
-  name = work
-  sub(/[[:space:]]+-.*/, "", name)
+  token = work
+  sub(/[[:space:]]+-.*/, "", token)
 
   description = work
   sub(/^[^[:space:]]+[[:space:]]+-[[:space:]]+/, "", description)
 
-  return prefix "* @param " name " " description " Type: " type "."
+  optional = 0
+  has_default = 0
+  default_value = ""
+
+  if (token ~ /^[A-Za-z_$][A-Za-z0-9_$]*$/) {
+    name = token
+  } else if (token ~ /^\[[A-Za-z_$][A-Za-z0-9_$]*\]$/) {
+    optional = 1
+    name = token
+    sub(/^\[/, "", name)
+    sub(/\]$/, "", name)
+  } else if (token ~ /^\[[A-Za-z_$][A-Za-z0-9_$]*=[^]]+\]$/) {
+    optional = 1
+    has_default = 1
+    body = token
+    sub(/^\[/, "", body)
+    sub(/\]$/, "", body)
+    equals_index = index(body, "=")
+    name = substr(body, 1, equals_index - 1)
+    default_value = substr(body, equals_index + 1)
+  } else {
+    return line
+  }
+
+  result = prefix "* @param " name " " description " Type: " type "."
+
+  if (optional) {
+    result = result " Optional."
+  }
+
+  if (has_default) {
+    result = result " Default: " default_value "."
+  }
+
+  return result
 }
 
 ## @rule filter_source
@@ -131,5 +173,5 @@ function translate_required_param(line,    prefix, work, type, name, description
     next
   }
 
-  print translate_required_param($0)
+  print translate_param($0)
 }

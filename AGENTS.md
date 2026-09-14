@@ -9,11 +9,13 @@ dialect.
 
 The maintained filter is `doxygen-javascript.awk`.
 
-The current implementation translates only the accepted canonical required JSDoc
-parameter form governed by ADR-013.  Unsupported JSDoc constructs remain visible
-unchanged.  Do not claim broader JSDoc translation, JavaScript semantic analysis,
-Doxygen integration, generated consumer artifacts, or release support until
-executable evidence and governing decisions exist.
+The current implementation translates only the accepted simple-parameter JSDoc
+forms governed by ADR-013 and ADR-014: required parameters, optional parameters,
+and optional parameters with compact documented defaults.  Unsupported JSDoc
+constructs remain visible unchanged.  Do not claim broader JSDoc translation,
+JavaScript semantic analysis, JavaScript/Doxygen integration, generated consumer
+artifacts, or release support until executable evidence and governing decisions
+exist.
 
 ## Governing Documentation
 
@@ -58,14 +60,17 @@ Maintained AWK source follows
 ## Architecture and Scope
 
 ADR-012 establishes the JavaScript filter and TAP regression boundary.  ADR-013
-adds the first structured translation: canonical required parameters written as
-`@param {Type} name - Description.` are converted to a line-preserving
-Doxygen-facing representation with the parameter name first and the type retained
-as visible prose.
+adds canonical required-parameter translation.  ADR-014 adds canonical optional
+parameters with and without compact documented defaults.
 
-Optional/defaulted parameters, dotted properties, rest parameters, destructured
+Supported parameter names remain simple JavaScript identifiers.  The filter keeps
+type expressions and supported optional defaults as textual documentation data
+rather than interpreting them as JavaScript semantics.  Compact defaults must be
+non-empty and contain neither whitespace nor `]` in the current grammar.
+
+Dotted properties, optional dotted properties, rest parameters, destructured
 parameter documentation, one-line JSDoc blocks, continuation records, and tags
-other than `@param` remain unsupported by ADR-013 and should pass through visibly.
+other than `@param` remain unsupported and should pass through visibly.
 
 Future JSDoc translation should remain narrow and evidence-driven.  Prefer visible
 unsupported syntax to speculative semantic claims.  Do not add JavaScript parsing,
@@ -92,21 +97,41 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves ordinary source pass-through, required-parameter
-translation, and visible pass-through of an unsupported optional/defaulted
-parameter.  Add a focused fixture and expected output when adding each new
-supported translation behavior.  Tests should protect externally observable
-behavior rather than internal helper structure.
+The current suite proves ordinary source pass-through; required-parameter
+translation; optional-parameter translation with and without compact documented
+defaults; and visible pass-through of unsupported dotted property notation.  Add
+a focused fixture and expected output when adding each new supported translation
+behavior.  Tests should protect externally observable behavior rather than
+internal helper structure.
+
+## Project Self-Documentation
+
+ADR-015 restores project self-documentation independently of JavaScript/Doxygen
+integration.  `doxygen-javascript.awk` is AWK source and is documented with the
+pinned released `awk-doxygen` filter.  `test/run-tests.sh` is Bash source and is
+documented with the pinned released `bash-doxygen` filter.
+
+Use:
+
+```sh
+make deps-docs
+make deps-docs-check
+make docs AWK_BIN=mawk
+```
+
+The documentation canary SHALL exercise this path on pull requests.  Pages SHALL
+publish the generated `doc/reference/` tree after pushes to `main`.  Generated
+`vendor/`, `doc/reference/`, and `doc/adr/README.md` state remains untracked.
+
+Do not treat successful project self-documentation as evidence that JavaScript
+source has been exercised through Doxygen with `doxygen-javascript.awk`.
 
 ## Deferred Infrastructure
 
-Automatic Python-specific documentation canaries and semantic-version release
-publication are deferred under ADR-012.  Do not add no-op compatibility targets
-merely to make copied workflows succeed.
-
-Doxygen integration, generated consumer artifacts, checksums, documentation
-publication, and release canaries should be re-enabled only after JavaScript-
-specific contracts exist and are tested.
+JavaScript/Doxygen integration testing, generated consumer artifacts, checksums,
+semantic-version release publication, and release-artifact canaries remain
+deferred under ADR-012 and ADR-015.  Do not add no-op compatibility targets merely
+to make copied workflows succeed.
 
 ## Engineering Approach
 

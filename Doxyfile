@@ -1,5 +1,5 @@
-PROJECT_NAME           = "python-doxygen"
-PROJECT_BRIEF          = "Reference documentation for python-doxygen"
+PROJECT_NAME           = "javascript-doxygen"
+PROJECT_BRIEF          = "Reference documentation for javascript-doxygen"
 OUTPUT_DIRECTORY       = doc/reference
 CREATE_SUBDIRS         = NO
 GENERATE_HTML          = YES
@@ -9,35 +9,24 @@ GENERATE_MAN           = NO
 GENERATE_RTF           = NO
 GENERATE_XML           = NO
 INPUT                  = README.md \
-                         doxygen-python.awk \
-                         tests/run-tests.sh \
+                         doxygen-javascript.awk \
+                         test/run-tests.sh \
                          doc/adr \
                          doc/decisions.md \
-                         doc/documentation-standard.md \
-                         doc/awk-documentation-standard.md
+                         doc/documentation-standard.md
 RECURSIVE              = YES
 FILE_PATTERNS          = *.awk \
                          *.sh \
                          *.bash \
                          *.md
-EXCLUDE                = dist \
-                         vendor \
+EXCLUDE                = vendor \
                          doc/reference \
-                         doc/adr/templates \
-                         tests/python/fixtures \
-                         tests/python/expected \
-                         tests/python/diagnostics \
-                         tests/doxygen/out
-EXCLUDE_PATTERNS       = */dist/* \
-                         */vendor/* \
+                         doc/adr/templates
+EXCLUDE_PATTERNS       = */vendor/* \
                          */doc/reference/* \
                          */doc/adr/templates/* \
                          */README.intro.md \
-                         */README.outro.md \
-                         */tests/python/fixtures/* \
-                         */tests/python/expected/* \
-                         */tests/python/diagnostics/* \
-                         */tests/doxygen/out/*
+                         */README.outro.md
 EXTENSION_MAPPING      = awk=C++ \
                          sh=C++ \
                          bash=C++
