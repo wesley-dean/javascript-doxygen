@@ -113,12 +113,12 @@ jobs:
           fail_on_unmatched_files: true
           overwrite_files: true
           files: |
-            dist/javascript-doxygen.dev.awk
-            dist/javascript-doxygen.dev.awk.sha256
-            dist/javascript-doxygen.awk
-            dist/javascript-doxygen.awk.sha256
-            dist/javascript-doxygen.min.awk
-            dist/javascript-doxygen.min.awk.sha256
+            dist/doxygen-javascript.dev.awk
+            dist/doxygen-javascript.dev.awk.sha256
+            dist/doxygen-javascript.awk
+            dist/doxygen-javascript.awk.sha256
+            dist/doxygen-javascript.min.awk
+            dist/doxygen-javascript.min.awk.sha256
 
   released-artifact-canary:
     name: Released-artifact canary
@@ -145,12 +145,12 @@ jobs:
           mkdir -p .release-canary
           base="https://github.com/${REPOSITORY}/releases/download/${RELEASE_TAG}"
           for asset in \
-            javascript-doxygen.dev.awk \
-            javascript-doxygen.dev.awk.sha256 \
-            javascript-doxygen.awk \
-            javascript-doxygen.awk.sha256 \
-            javascript-doxygen.min.awk \
-            javascript-doxygen.min.awk.sha256
+            doxygen-javascript.dev.awk \
+            doxygen-javascript.dev.awk.sha256 \
+            doxygen-javascript.awk \
+            doxygen-javascript.awk.sha256 \
+            doxygen-javascript.min.awk \
+            doxygen-javascript.min.awk.sha256
           do
             curl --fail --location --silent --show-error \
               --retry 8 --retry-all-errors --retry-delay 2 \
@@ -161,17 +161,17 @@ jobs:
       - name: Verify published SHA-256 files
         run: |
           cd .release-canary
-          sha256sum -c javascript-doxygen.dev.awk.sha256
-          sha256sum -c javascript-doxygen.awk.sha256
-          sha256sum -c javascript-doxygen.min.awk.sha256
+          sha256sum -c doxygen-javascript.dev.awk.sha256
+          sha256sum -c doxygen-javascript.awk.sha256
+          sha256sum -c doxygen-javascript.min.awk.sha256
 
       - name: Validate published semantic parity
         run: |
           root="$(pwd)"
           for filter in \
-            javascript-doxygen.dev.awk \
-            javascript-doxygen.awk \
-            javascript-doxygen.min.awk
+            doxygen-javascript.dev.awk \
+            doxygen-javascript.awk \
+            doxygen-javascript.min.awk
           do
             for awk_bin in mawk gawk
             do
@@ -185,9 +185,9 @@ jobs:
         run: |
           root="$(pwd)"
           for filter in \
-            javascript-doxygen.dev.awk \
-            javascript-doxygen.awk \
-            javascript-doxygen.min.awk
+            doxygen-javascript.dev.awk \
+            doxygen-javascript.awk \
+            doxygen-javascript.min.awk
           do
             for awk_bin in mawk gawk
             do
