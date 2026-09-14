@@ -51,8 +51,8 @@ moves the maintained JSDoc type expression into visible prose:
 
 The filter preserves the return type text without validation, normalization,
 inference, or interpretation.  Singular `@return`, untyped `@returns`, typed
-returns without descriptions, continuation lines, and `@yields` remain outside
-the accepted return translation boundary.
+returns without descriptions, and continuation lines remain outside the accepted
+return translation boundary.
 
 ADR-017 adds the canonical typed-and-described exception form:
 
@@ -73,24 +73,74 @@ whitespace.  Description-only `@throws`, type-only `@throws`, throws types with
 whitespace, and continuation records remain outside the accepted exception
 translation boundary.
 
+ADR-019 adds the canonical typed generator-yield form:
+
+```text
+@yields {Type} Description.
+```
+
+Doxygen has no native yields command.  The filter therefore emits the generated
+Doxygen-facing command on the same physical source line:
+
+```text
+@jsyields Type: Type. Description.
+```
+
+Maintained JavaScript must continue to use `@yields`; `@jsyields` is derivative
+syntax used only at the Doxygen boundary.  Consumers that process translated
+yields must load `doxygen-javascript.conf` or an exactly equivalent alias:
+
+```text
+ALIASES += jsyields="@par Yields^^"
+```
+
+The alias introduces a logical line break inside Doxygen so the generated output
+contains a dedicated `Yields` paragraph without the filter adding a physical line.
+Description-only `@yields`, type-only `@yields`, continuation records, and other
+unsupported yields forms remain unchanged.
+
+## Native-Compatible Tags
+
+ADR-020 establishes a second supported path for JSDoc forms that do not require a
+Doxygen-facing rewrite.  When canonical JSDoc syntax and Doxygen syntax have
+compatible grammar and meaning, the filter should preserve the source record
+unchanged and support should be established by downstream evidence rather than by
+adding unnecessary translator code.
+
+The first accepted native-compatible forms are:
+
+```text
+@deprecated Description.
+@see Reference
+```
+
+These records remain byte-preserved by the filter.  The integration suite verifies
+that Doxygen interprets them as deprecation and see-also documentation.
+
+Native compatibility is not inferred merely from a matching tag name.  Each form
+must have focused pass-through coverage, physical line-count preservation, and
+Doxygen integration evidence before the repository claims it as supported.  Do
+not normalize `@see` to `@sa` or introduce an alias when Doxygen already accepts
+the maintained JSDoc command directly.
+
 Unsupported parameter forms remain unchanged.  Dotted property names, optional
-dotted properties, rest parameters, destructured parameters, yields, typedefs,
-callbacks, properties, modules, inline tags, and other JSDoc forms must be claimed
-only when the filter has corresponding accepted governance and executable
-evidence.
+dotted properties, rest parameters, destructured parameters, typedefs, callbacks,
+properties, modules, inline tags, and other JSDoc forms must be claimed only when
+the filter has corresponding accepted governance and executable evidence.
 
 ## JavaScript/Doxygen integration
 
-ADR-018 establishes executable downstream evidence for the currently governed
-translation forms.  The integration configuration beneath `test/doxygen/` keeps
-JavaScript as the parsed source language by using Doxygen's JavaScript parser and
-applies `doxygen-javascript.awk` only as an input filter.
+ADR-018 establishes executable downstream evidence for governed translation forms.
+The integration configuration beneath `test/doxygen/` keeps JavaScript as the
+parsed source language by using Doxygen's JavaScript parser and applies
+`doxygen-javascript.awk` only as an input filter.
 
 The integration suite generates Doxygen XML and checks semantic structure rather
-than relying only on filtered source text.  The initial contract verifies named
-parameter documentation, visible optional/default prose, return documentation in a
-Doxygen return section, and exception documentation in a Doxygen exception
-parameter list.
+than relying only on filtered source text.  The contract verifies named parameter
+documentation, visible optional/default prose, return documentation in a Doxygen
+return section, exception documentation in a Doxygen exception parameter list, a
+dedicated alias-backed `Yields` paragraph under ADR-019, and native deprecation and
+see-also structure under ADR-020.
 
 Use:
 
@@ -100,20 +150,25 @@ make test-doxygen AWK_BIN=gawk
 ```
 
 These tests complement the TAP regression suite; they do not replace it.  TAP
-fixtures prove the filter's textual transformation boundary, while the Doxygen
-integration surface proves that the downstream documentation engine interprets
-selected governed output as intended.
+fixtures prove the filter's textual transformation or pass-through boundary and
+physical line preservation, while the Doxygen integration surface proves that the
+downstream documentation engine interprets selected governed output as intended.
 
-Current governed translations preserve one physical output record for every input
-record.  That line correspondence is part of the integration boundary because
-Doxygen associates filtered input with source locations and source-browser
-anchors.  A future representation that adds or removes physical lines requires a
-new decision and integration evidence; it must not be inherited mechanically from
-a sibling language project.
+All current governed transformations and native-compatible forms preserve one
+physical output record for every input record.  `test/run-tests.sh` checks physical
+line-count equality for every fixture.  That line correspondence is part of the
+integration boundary because Doxygen associates filtered input with source
+locations and source-browser anchors.  ADR-019 uses Doxygen alias expansion
+specifically so the logical break needed for a `Yields` paragraph does not become
+a physical filter line.
+
+A future representation that adds or removes physical lines requires a new
+decision and integration evidence; it must not be inherited mechanically from a
+sibling language project.
 
 Passing integration tests establish only the explicit forms and Doxygen
 configuration exercised by the suite.  They do not establish arbitrary JavaScript
-syntax support or complete JSDoc translation.
+syntax support, complete JSDoc translation, or blanket native compatibility.
 
 ## Repository self-documentation
 
@@ -128,9 +183,9 @@ pinned documentation-only dependencies, `make deps-docs-check` verifies them, an
 `make docs` generates project reference documentation beneath `doc/reference/`.
 The generated ADR landing page and reference output are not maintained source.
 
-Successful self-documentation does not expand the supported JSDoc translation
-surface and does not substitute for the JavaScript/Doxygen integration evidence
-governed by ADR-018.
+Successful self-documentation does not expand the supported JSDoc surface and does
+not substitute for the JavaScript/Doxygen integration evidence governed by
+ADR-018, ADR-019, and ADR-020.
 
 Maintained AWK implementation source is governed by:
 
