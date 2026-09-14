@@ -43,7 +43,7 @@ run_fixture() {
 trap 'rm -rf -- "$TMP_DIR"' EXIT HUP INT TERM
 
 printf '%s\n' 'TAP version 13'
-printf '%s\n' '1..7'
+printf '%s\n' '1..9'
 
 run_fixture 1 pass-through 'ordinary JavaScript passes through unchanged'
 run_fixture 2 jsdoc-param-required 'required JSDoc parameter is translated'
@@ -52,6 +52,8 @@ run_fixture 4 jsdoc-param-optional-no-default 'optional JSDoc parameter is trans
 run_fixture 5 jsdoc-param-property 'unsupported property parameter remains unchanged'
 run_fixture 6 jsdoc-returns-typed 'typed JSDoc returns value is translated'
 run_fixture 7 jsdoc-return-singular 'singular JSDoc return synonym remains unchanged'
+run_fixture 8 jsdoc-throws-typed 'typed JSDoc throws record is translated'
+run_fixture 9 jsdoc-throws-unsupported 'unsupported JSDoc throws forms remain unchanged'
 
 if ((failures > 0)); then
   exit 1

@@ -189,6 +189,49 @@ function translate_returns(line,    prefix, work, type, description) {
   return prefix "* @returns " description " Type: " type "."
 }
 
+## @fn translate_throws(line)
+## @brief Translates one canonical typed JSDoc `@throws` record.
+## @details
+## Recognizes the governed form `@throws {Type} Description.` when the exception
+## type is a compact token without whitespace.  Doxygen expects an exception
+## object immediately after `@throws`, so the filter removes only the JSDoc type
+## braces and otherwise preserves the documented type and description text.
+##
+## @param line JSDoc source record to translate.
+## @local prefix Leading indentation retained from the source record.
+## @local work Scratch copy used while extracting fields.
+## @local type Maintained JSDoc exception type without surrounding braces.
+## @local description Maintained exception description.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A translated Doxygen-facing record when the governed form matches;
+## otherwise the original record unchanged.
+function translate_throws(line,    prefix, work, type, description) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@throws[[:space:]]+\{[^}[:space:]]+\}[[:space:]]+.+$/) {
+    return line
+  }
+
+  prefix = line
+  sub(/\*.*/, "", prefix)
+
+  work = line
+  sub(/^[[:space:]]*\*[[:space:]]+@throws[[:space:]]+\{/, "", work)
+
+  type = work
+  sub(/\}.*/, "", type)
+
+  description = work
+  sub(/^[^}]*\}[[:space:]]+/, "", description)
+
+  return prefix "* @throws " type " " description
+}
+
 ## @rule filter_source
 ## @brief Preserves JavaScript source while translating governed JSDoc records.
 ##
@@ -216,5 +259,6 @@ function translate_returns(line,    prefix, work, type, description) {
   }
 
   line = translate_param($0)
-  print translate_returns(line)
+  line = translate_returns(line)
+  print translate_throws(line)
 }

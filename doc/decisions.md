@@ -69,23 +69,34 @@ rather than validated or inferred; singular `@return`, untyped returns, typed
 returns without descriptions, continuation records, and `@yields` remain unchanged
 and visible.  See [ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md).
 
+## Typed JSDoc exception translation
+
+ADR-017 adds canonical typed-and-described exception translation.  Records written
+as `@throws {Type} Description.` retain Doxygen's native `@throws` command and move
+the compact maintained exception type into Doxygen's exception-object position by
+removing only the JSDoc braces.  The type and description remain textual source
+data; description-only throws, type-only throws, types containing whitespace,
+continuation records, and ambiguous forms remain unchanged and visible.  See
+[ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md).
+
 ## Capability scope and epistemic honesty
 
 The project distinguishes implemented behavior from planned behavior and makes
 capability claims only when evidence supports them.  ADR-012 established the
 initial pass-through baseline, ADR-013 added required simple parameters, ADR-014
 added optional simple parameters with and without compact documented defaults,
-and ADR-016 adds canonical typed return translation.  ADR-015 establishes
-self-documentation as a separate supported capability without treating it as
-JavaScript/Doxygen integration evidence.  Broader JSDoc translation and
-JavaScript/Doxygen integration remain deferred until separately governed and
-proven.  See
+ADR-016 added canonical typed return translation, and ADR-017 adds canonical typed
+exception translation.  ADR-015 establishes self-documentation as a separate
+supported capability without treating it as JavaScript/Doxygen integration
+evidence.  Broader JSDoc translation and JavaScript/Doxygen integration remain
+deferred until separately governed and proven.  See
 [ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
 [ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md),
-[ADR-015](adr/ADR-015-restore-project-self-documentation.md), and
-[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md).
+[ADR-015](adr/ADR-015-restore-project-self-documentation.md),
+[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md), and
+[ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md).
 
 ## Supported Python documentation scope
 
@@ -107,13 +118,15 @@ translating governed field syntax, with `PYTHON_DOCSTRING = NO` required by its
 maintained Doxygen integration.  That representation remains historical reference
 for this repository.  ADR-013 establishes the first JavaScript Doxygen-facing
 translation for required `@param` records, ADR-014 extends that representation to
-simple optional parameters, and ADR-016 applies the same line-preserving textual
-type strategy to canonical `@returns` records.  See
+simple optional parameters, ADR-016 applies a line-preserving textual type strategy
+to canonical `@returns` records, and ADR-017 maps canonical exception types into
+Doxygen's native `@throws` exception-object position.  See
 [ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
-[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md), and
-[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md).
+[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md),
+[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md), and
+[ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md).
 
 ## Yields translation
 
@@ -142,15 +155,18 @@ ADR-005 established the value of small behavior-focused fixtures.  ADR-012 keeps
 that principle while replacing the copied Python fixture paths for maintained
 JavaScript behavior with `test/fixtures/` and `test/expected/`, plus TAP output
 from `test/run-tests.sh`.  ADR-013 adds required-parameter coverage, ADR-014 adds
-optional/compact-default coverage plus a negative property-notation boundary, and
-ADR-016 adds typed-return coverage plus a negative singular-`@return` boundary.
-ADR-008 remains historical support for supplementary scenario-level coverage.
-See [ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md),
+optional/compact-default coverage plus a negative property-notation boundary,
+ADR-016 adds typed-return coverage plus a negative singular-`@return` boundary,
+and ADR-017 adds typed-throws coverage plus negative description-only and type-only
+throws boundaries.  ADR-008 remains historical support for supplementary
+scenario-level coverage.  See
+[ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md),
 [ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
-[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md), and
-[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md).
+[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md),
+[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md), and
+[ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md).
 
 ## Shared project infrastructure
 
@@ -190,24 +206,28 @@ coverage.  See
 ADR-009 expanded the copied Python docstring recognition boundary.  ADR-012 does
 not carry those Python-specific recognition rules into JavaScript.  ADR-013 adds a
 separate JavaScript recognition boundary for required simple JSDoc parameters,
-ADR-014 extends that boundary to bracketed simple optional parameters, and ADR-016
-adds a separate recognition boundary for canonical typed `@returns` records while
-leaving aliases and unsupported return forms unchanged.  See
+ADR-014 extends that boundary to bracketed simple optional parameters, ADR-016
+adds a separate recognition boundary for canonical typed `@returns` records, and
+ADR-017 adds a typed-and-described `@throws` boundary while leaving unsupported
+throws forms unchanged.  See
 [ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
-[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md), and
-[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md).
+[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md),
+[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md), and
+[ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md).
 
 ## Unannotated type fields
 
 ADR-010 translates copied Python `:type name:` and `:rtype:` fields into dedicated
 Doxygen paragraphs.  ADR-012 does not adopt an equivalent JavaScript type-field
 translation.  ADR-013 and ADR-014 preserve JSDoc parameter type expressions as
-visible prose, and ADR-016 extends that strategy to canonical return type
-expressions; none establishes a general JavaScript Doxygen type-field contract.
-See [ADR-010](adr/ADR-010-translate-unannotated-type-fields.md),
+visible prose, ADR-016 extends that strategy to canonical return type expressions,
+and ADR-017 uses Doxygen's native exception-object slot for canonical exception
+types; none establishes a general JavaScript Doxygen type-field contract.  See
+[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
-[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md), and
-[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md).
+[ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md),
+[ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md), and
+[ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md).
