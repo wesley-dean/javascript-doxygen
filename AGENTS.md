@@ -13,25 +13,41 @@ ADRs.
 ## Governing Documentation
 
 Before changing the repository, review `README.md`, this file,
-`doc/documentation-standard.md`, `doc/awk-documentation-standard.md`, every ADR
-in `doc/adr/*.md`, and `doc/decisions.md`.
+`doc/documentation-standard.md`, the applicable files under `doc/standards/`,
+every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
 compatibility, documentation-publication, or release changes require an ADR
 unless existing governance already covers the decision.
 
+Files under `doc/standards/` are governing project requirements, not suggestions,
+when they apply to maintained content.  General and cross-cutting standards apply
+where relevant; language-specific standards apply to maintained content in that
+language.  Presence in the complete released snapshot does not by itself make a
+standard applicable.  Content under `doc/standards/examples/` is illustrative and
+non-normative unless a governing standard explicitly says otherwise.
+
+Accepted repository-specific ADRs and explicit local policy may refine or
+supersede imported standards.  Do not silently deviate from an applicable
+standard.  Do not edit imported standards locally; project-specific exceptions
+belong in repository governance.  `.codingstandardrc` records the concrete
+upstream release and archive digest for the managed snapshot.
+
 ## Documentation Standards
 
-The authoritative Python standard is
+The adopted Python documentation standard is materialized at
+`doc/standards/python/documentation-standard.md`; its canonical upstream is
 `wesley-dean/coding_standards/standards/python/documentation-standard.md`.
-`doc/documentation-standard.md` records this repository's adoption point.  Do
-not independently rewrite or weaken the canonical Python contract here.
+`doc/documentation-standard.md` records this repository's adoption point.  Do not
+independently rewrite or weaken the imported Python contract here.
 
-Maintained AWK source follows `doc/awk-documentation-standard.md`, the checked-in
-AWK documentation standard supplied for this repository.  Its canonical upstream
-is `wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
-Documentation changes to `doxygen-python.awk` must preserve executable behavior
-unless the change is separately governed and tested as a behavior change.
+Maintained AWK source follows
+`doc/standards/awk/documentation-standard.md`, whose canonical upstream is
+`wesley-dean/coding_standards/standards/awk/documentation-standard.md`.  The older
+`doc/awk-documentation-standard.md` path remains from the copied baseline and is
+not an independently mutable standards authority.  Documentation changes to
+`doxygen-python.awk` must preserve executable behavior unless the change is
+separately governed and tested as a behavior change.
 
 ## Architecture and Scope
 
