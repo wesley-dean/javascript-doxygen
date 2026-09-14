@@ -1,0 +1,4 @@
+# Generated documentation dependencies and output.
+/vendor/
+/doc/reference/
+/doc/adr/README.md

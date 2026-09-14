@@ -4,18 +4,19 @@
 JavaScript.  The long-term goal is to let JavaScript remain JavaScript-native,
 with JSDoc-style source documentation translated only where Doxygen needs help.
 
-The maintained filter is `doxygen-javascript.awk`.  Its first implemented JSDoc
-translation supports canonical required parameters of the form
-`@param {Type} name - Description.` while preserving unsupported forms unchanged.
-It does not infer JavaScript semantics or claim a complete Doxygen integration.
+The maintained filter is `doxygen-javascript.awk`.  It currently supports the
+canonical simple-parameter forms governed by ADR-013 and ADR-014: required
+parameters, optional parameters, and optional parameters with compact documented
+defaults.  Unsupported forms remain unchanged.  The filter does not infer
+JavaScript semantics or claim a complete JavaScript/Doxygen integration.
 
 ## Current capability
 
 For newline-terminated JavaScript input, the filter preserves source records and
-translates canonical required JSDoc parameter records inside conservatively
-recognized multi-line JSDoc blocks.
+translates supported JSDoc parameter records inside conservatively recognized
+multi-line JSDoc blocks.
 
-For example:
+A required parameter:
 
 ```text
 @param {string} name - The name to greet.
@@ -27,8 +28,34 @@ is translated at the Doxygen boundary to:
 @param name The name to greet. Type: string.
 ```
 
-The maintained JavaScript source remains unchanged.  Unsupported JSDoc forms,
-including optional/defaulted parameters, currently pass through unchanged.
+An optional parameter:
+
+```text
+@param {string} [name] - The name to greet.
+```
+
+is translated to:
+
+```text
+@param name The name to greet. Type: string. Optional.
+```
+
+An optional parameter with a compact documented default:
+
+```text
+@param {string} [name=World] - The name to greet.
+```
+
+is translated to:
+
+```text
+@param name The name to greet. Type: string. Optional. Default: World.
+```
+
+The maintained JavaScript source remains unchanged.  The filter preserves type and
+default text without interpreting either.  Current default-token support requires
+non-empty text containing neither whitespace nor `]`.  Unsupported forms such as
+dotted property notation continue to pass through unchanged.
 
 Run the filter with:
 
@@ -64,10 +91,35 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves three behaviors: ordinary JavaScript passes through
-unchanged, canonical required JSDoc parameters are translated, and unsupported
-optional/defaulted parameters remain visible unchanged.  Future documentation
-translations should grow the suite one focused behavior at a time.
+The current suite proves five behaviors: ordinary JavaScript passes through
+unchanged; canonical required parameters translate; optional parameters with and
+without compact documented defaults translate; and unsupported dotted property
+notation remains visible unchanged while supported records in the same block still
+translate.  Future documentation translations should grow the suite one focused
+behavior at a time.
+
+## Project reference documentation
+
+Project self-documentation is separate from JavaScript/Doxygen integration.  The
+maintained implementation is AWK, so `doxygen-javascript.awk` is documented with
+the pinned released `awk-doxygen` filter.  The Bash TAP harness is documented with
+the pinned released `bash-doxygen` filter.
+
+Prepare and generate the project reference documentation with:
+
+```sh
+make deps-docs
+make deps-docs-check
+make docs AWK_BIN=mawk
+```
+
+The generated ADR landing page lives at `doc/adr/README.md`, and Doxygen HTML is
+written beneath `doc/reference/`.  Both outputs, together with the synchronized
+`vendor/` dependencies, are generated state and are ignored by Git.
+
+A documentation canary exercises this path in pull requests.  Pushes to `main`
+generate the same reference documentation and publish `doc/reference/` to GitHub
+Pages.  ADR-015 governs this self-documentation boundary.
 
 ## Deferred capabilities
 
@@ -78,16 +130,19 @@ that those interfaces are supported here.
 
 The following JavaScript-specific capabilities remain deliberately deferred:
 
-- additional JSDoc parameter forms and tags beyond the accepted required-parameter
-  contract;
-- Doxygen integration tests for JavaScript;
+- complex JSDoc parameter forms and tags beyond the accepted simple-parameter
+  contracts;
+- exercising JavaScript source through Doxygen with `doxygen-javascript.awk`;
+- JavaScript/Doxygen integration assertions;
 - generated consumer artifacts and checksums;
-- documentation canary publication; and
-- semantic-version release publication.
+- semantic-version release publication; and
+- release-artifact canaries.
 
 Those capabilities should be enabled only after their JavaScript-specific
-contracts are governed and tested.  ADR-012 records the bootstrap boundary, and
-ADR-013 governs the first required-parameter translation.
+contracts are governed and tested.  ADR-012 records the bootstrap boundary,
+ADR-013 governs required parameters, ADR-014 governs optional parameters, and
+ADR-015 distinguishes supported project self-documentation from deferred
+JavaScript/Doxygen integration.
 
 ## Coding standards and governance
 

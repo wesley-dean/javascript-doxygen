@@ -1,18 +1,46 @@
 ---
-name: Documentation canary (deferred)
+name: Documentation canary
 
 # yamllint disable-line rule:truthy
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: read-all
 
 jobs:
-  deferred:
+  self-documentation:
+    name: Project self-documentation canary
     runs-on: ubuntu-24.04
     steps:
-      - name: Report deferred documentation integration
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install documentation tools
         run: |
-          printf '%s\n' \
-            'Documentation canary is deferred until JavaScript/Doxygen integration is implemented.'
+          sudo apt-get update
+          sudo apt-get install --yes curl doxygen graphviz make mawk
+
+      - name: Prepare stable documentation dependencies
+        run: make deps-docs
+
+      - name: Verify prepared dependency state
+        run: make deps-docs-check
+
+      - name: Generate project reference documentation
+        run: make docs AWK_BIN=mawk
+
+      - name: Verify generated documentation state
+        run: |
+          test -f doc/adr/README.md
+          grep -F 'ADR-015' doc/adr/README.md
+          git check-ignore -q doc/adr/README.md
+          test -z "$(git status --porcelain --untracked-files=all -- doc/adr/README.md)"
+          test -f doc/reference/index.html
+          git check-ignore -q doc/reference/index.html
+          test -z "$(git status --porcelain --untracked-files=all -- doc/reference)"

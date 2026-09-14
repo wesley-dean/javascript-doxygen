@@ -30,7 +30,7 @@ jobs:
       - name: Install documentation tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes curl doxygen graphviz make
+          sudo apt-get install --yes curl doxygen graphviz make mawk
 
       - name: Synchronize pinned documentation dependencies
         run: make deps-docs
@@ -39,7 +39,7 @@ jobs:
         run: make deps-docs-check
 
       - name: Generate stable reference documentation
-        run: make docs
+        run: make docs AWK_BIN=mawk
 
       - name: Verify dependency state after generation
         run: make deps-docs-check
@@ -47,7 +47,7 @@ jobs:
       - name: Verify generated documentation state
         run: |
           test -f doc/adr/README.md
-          grep -F 'ADR-007' doc/adr/README.md
+          grep -F 'ADR-015' doc/adr/README.md
           git check-ignore -q doc/adr/README.md
           test -z "$(git status --porcelain --untracked-files=all -- doc/adr/README.md)"
           test -f doc/reference/index.html
