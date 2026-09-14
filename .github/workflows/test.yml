@@ -35,3 +35,19 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y doxygen ${{ matrix.awk }}
       - name: Run Doxygen integration suite
         run: make test-doxygen AWK_BIN=${{ matrix.awk }}
+
+  distribution:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        awk: [mawk, gawk]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install distribution test tools
+        run: sudo apt-get update && sudo apt-get install -y doxygen ${{ matrix.awk }}
+      - name: Build distribution artifacts
+        run: make all AWK_BIN=${{ matrix.awk }}
+      - name: Validate artifact parity and checksums
+        run: make test-dist AWK_BIN=${{ matrix.awk }}
+      - name: Validate artifact Doxygen integration
+        run: make test-dist-doxygen AWK_BIN=${{ matrix.awk }}

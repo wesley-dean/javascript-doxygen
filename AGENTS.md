@@ -16,12 +16,13 @@ canonical typed `@yields` records governed by ADR-019, canonical virtual `@typed
 records governed by ADR-021, canonical child `@property` records governed by
 ADR-022, and canonical named `@callback` contracts governed by ADR-023.  ADR-018
 exercises governed forms through Doxygen's JavaScript parser, ADR-020 establishes
-native-compatible pass-through for proven `@deprecated` and `@see` forms, and
-ADR-024 establishes consumer-alias rendering for byte-preserved canonical `@type`
-annotations.  Unsupported JSDoc constructs remain visible unchanged.  Do not
-claim broader JSDoc translation, native compatibility, consumer-alias support,
-JavaScript semantic analysis, generated consumer artifacts, or release support
-until executable evidence and governing decisions exist.
+native-compatible pass-through for proven `@deprecated` and `@see` forms, ADR-024
+establishes consumer-alias rendering for byte-preserved canonical `@type`
+annotations, and ADR-025 establishes generated development, ordinary, and minified
+AWK build artifacts with adjacent SHA-256 files.  Unsupported JSDoc constructs
+remain visible unchanged.  Do not claim broader JSDoc translation, native
+compatibility, consumer-alias support, JavaScript semantic analysis, or release
+publication until executable evidence and governing decisions exist.
 
 ## Governing Documentation
 
@@ -31,8 +32,8 @@ every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
 compatibility, documentation-publication, integration, consumer-configuration,
-virtual-type representation, or release changes require an ADR unless existing
-governance already covers the decision.
+virtual-type representation, build/distribution, or release changes require an ADR
+unless existing governance already covers the decision.
 
 Files under `doc/standards/` are governing project requirements when applicable.
 General and cross-cutting standards apply where relevant; language-specific
@@ -86,8 +87,10 @@ canonical simple properties as structured child documentation on those pages.
 ADR-023 represents named simple callbacks as a distinct virtual-page entity and
 reuses already-governed parameter and return translations for callback signatures.
 ADR-024 supports canonical `@type {Type}` annotations by leaving the maintained
-JSDoc record unchanged and defining its Doxygen presentation entirely in the
-consumer configuration.
+JSDoc record unchanged and defining its Doxygen presentation entirely in consumer
+configuration.  ADR-025 establishes the JavaScript-specific generated artifact,
+checksum, build-dependency, and source/dist parity contract while leaving release
+publication separate.
 
 Supported parameter, virtual typedef, governed typedef-property, and callback names
 remain simple JavaScript identifiers.  The filter keeps type expressions and
@@ -103,16 +106,18 @@ emitted as `@throws Type Description.`.  Canonical typed yields use
 `@jsyields Type: Type. Description.`.
 
 `@jsyields` is generated Doxygen-facing syntax only.  Maintainers SHALL continue
-to write JSDoc `@yields`.  Consumers that process translated yields SHALL load the
-checked-in `doxygen-javascript.conf` alias contract or an exactly equivalent
-configuration:
+to write JSDoc `@yields`.  A consuming repository SHALL define the governed alias
+in its own Doxyfile:
 
 ```text
 ALIASES += jsyields="@par Yields^^"
 ```
 
 The alias introduces the logical newline required for a Doxygen `Yields` paragraph
-without changing the filter's physical line count.
+without changing the filter's physical line count.  The checked-in
+`doxygen-javascript.conf` file is the repository's canonical integration-test and
+reference copy of the alias configuration; it is not a downstream runtime
+dependency.
 
 Canonical `@deprecated Description.` and `@see Reference` records are currently
 accepted as native-compatible forms under ADR-020.  The filter SHALL preserve them
@@ -122,10 +127,11 @@ pass-through and downstream semantic evidence.
 
 Canonical virtual typedefs use `@typedef {Type} Name`.  ADR-021 requires the
 filter to emit a generated `@jstypedef` alias invocation on the same physical line.
-The alias expands to a Doxygen related page whose visible title is the exact JSDoc
-typedef name.  The page is a documentation entity, not a runtime JavaScript class,
-struct, interface, function, variable, or native typedef declaration.  Do not
-synthesize fake JavaScript declarations to create documentation symbols.
+The consumer-owned Doxyfile alias expands to a Doxygen related page whose visible
+title is the exact JSDoc typedef name.  The page is a documentation entity, not a
+runtime JavaScript class, struct, interface, function, variable, or native typedef
+declaration.  Do not synthesize fake JavaScript declarations to create
+documentation symbols.
 
 Virtual typedef page labels are deterministic generated identifiers.  Maintained
 source authors SHALL NOT write or duplicate those labels.  Generated labels use a
@@ -163,8 +169,8 @@ Canonical symbol type annotations use:
 ```
 
 ADR-024 requires `doxygen-javascript.awk` to preserve this maintained JSDoc record
-unchanged.  Consumers that want governed Doxygen rendering SHALL load the checked-
-in consumer alias or an exactly equivalent configuration:
+unchanged.  A consuming repository that uses this governed rendering SHALL define
+the alias in its own Doxyfile:
 
 ```text
 ALIASES += type="@par Type^^"
@@ -173,8 +179,8 @@ ALIASES += type="@par Type^^"
 The alias renders the maintained expression as a `Type` paragraph attached to the
 symbol documented by the surrounding block.  The braces and expression remain
 textual documentation data.  Do not parse, normalize, infer, validate, or claim
-native Doxygen type semantics from this representation.  The alias is presentation,
-not type-system integration.
+native Doxygen type semantics from this representation.  The alias is
+presentation, not type-system integration.
 
 The singular JSDoc synonym `@return`, untyped returns, typed returns without
 descriptions, description-only `@throws`, type-only `@throws`, throws types with
@@ -204,10 +210,74 @@ migration as reference material.  They are not current JavaScript capability
 claims where ADR-012 and later JavaScript-specific decisions supersede their
 Python-specific contracts.
 
+## Consumer Integration
+
+Downstream consumption follows the sibling filter model.  A consuming repository
+uses `bashdeps` to pin one released JavaScript filter and materializes that one
+runtime dependency conventionally as:
+
+```text
+vendor/javascript-doxygen.awk
+```
+
+The consumer owns its Doxyfile.  It SHALL map JavaScript files to Doxygen's
+JavaScript parser, apply the vendored filter through `FILTER_PATTERNS`, and include
+the governed alias definitions needed by the supported alias-backed
+representations.  The README is the human-facing setup reference for the exact
+current Doxyfile block.
+
+Do not turn `doxygen-javascript.conf` into a second Bashdeps dependency.  It exists
+to keep repository integration tests and the reference alias contract inspectable.
+The downstream runtime dependency model remains exactly one AWK filter file.
+
+## Build and Distribution
+
+ADR-025 establishes the local generated-artifact lifecycle.  The build outputs are:
+
+```text
+dist/javascript-doxygen.dev.awk
+dist/javascript-doxygen.dev.awk.sha256
+dist/javascript-doxygen.awk
+dist/javascript-doxygen.awk.sha256
+dist/javascript-doxygen.min.awk
+dist/javascript-doxygen.min.awk.sha256
+```
+
+The development artifact retains all maintained AWK documentation.  The ordinary
+artifact removes only project-governed `##` Doxygen documentation records.  The
+minified artifact is derived from the ordinary artifact body by the pinned
+released AWK Minifier synchronized through `bashdeps`; generated provenance is kept
+outside the minifier input.
+
+Build dependency acquisition and build execution are separate boundaries:
+
+```sh
+make deps
+make deps-check
+make build
+```
+
+`make deps` may use the network.  `make deps-check` and `make build` are offline and
+non-repairing.  `make all` is the convenience lifecycle that runs dependency
+preparation and then builds all six outputs.  Do not add hidden downloads to
+`make build`, silently fall back to another minifier, or use the current candidate
+as its own production minifier.
+
+`dependencies.txt` owns build dependencies.  `dependencies-docs.txt` owns
+self-documentation dependencies.  Both may materialize files under `vendor/`;
+Bashdeps synchronization does not prune files omitted from the current manifest.
+
+Generated `dist/` content is untracked.  Every generated AWK artifact must preserve
+the maintained filter's tested semantics and must have a valid adjacent SHA-256
+file in ordinary `sha256sum`-compatible format.
+
+Release publication is not established by ADR-025.  Issue #19 tracks the separate
+JavaScript-specific release-publication mechanism.
+
 ## Portability and Testing
 
-Portable AWK is the compatibility floor.  Production filter source must run under
-at least `mawk` and GNU awk.
+Portable AWK is the compatibility floor.  Production filter source and generated
+artifacts must run under at least `mawk` and GNU awk.
 
 Behavior-focused JavaScript fixtures live under `test/fixtures/`.  Golden filtered
 output lives under `test/expected/`.  `test/run-tests.sh` emits TAP version 13 and
@@ -250,26 +320,40 @@ make test-doxygen AWK_BIN=mawk
 make test-doxygen AWK_BIN=gawk
 ```
 
-The integration configuration parses `.js` input as JavaScript, applies the
-maintained filter through Doxygen's input-filter mechanism, loads
-`doxygen-javascript.conf`, generates XML, and checks semantic structure for
-governed parameter, return, exception, yield, deprecation, see-also, virtual
-typedef, typedef-property, callback, and type-annotation forms.  The yields
-integration assertions SHALL verify both a dedicated `Yields` paragraph and
-source-location evidence for the generator fixture.  Native-compatible tag
-assertions SHALL prove that unchanged source records are interpreted by Doxygen as
-the intended semantic structures.  Virtual typedef assertions SHALL prove that
-Doxygen creates a named related page, retains the maintained prose and base type,
-and resolves a reference to the generated page label.  Property assertions SHALL
-prove that the property heading, type, and description occur inside the generated
-virtual typedef page.  Callback assertions SHALL prove named page creation,
-parameter and return sections inside that page, and resolved references to the
-generated callback label.  Type-annotation assertions SHALL prove that the
-maintained `@type` record remains unchanged through the filter and that Doxygen
-attaches the configured `Type` paragraph and retained expression to the documented
-symbol.  CI SHALL exercise this path under both portable-AWK implementations.  Keep
-this surface separate from `make test` so textual filter failures and downstream
-Doxygen failures remain independently diagnosable.
+The repository integration configuration parses `.js` input as JavaScript, applies
+the selected filter through Doxygen's input-filter mechanism, loads the
+repository-only `doxygen-javascript.conf` reference fragment, generates XML, and
+checks semantic structure for governed parameter, return, exception, yield,
+deprecation, see-also, virtual typedef, typedef-property, callback, and type-
+annotation forms.  The yields integration assertions SHALL verify both a dedicated
+`Yields` paragraph and source-location evidence for the generator fixture.  Native-
+compatible tag assertions SHALL prove that unchanged source records are interpreted
+by Doxygen as the intended semantic structures.  Virtual typedef assertions SHALL
+prove that Doxygen creates a named related page, retains the maintained prose and
+base type, and resolves a reference to the generated page label.  Property
+assertions SHALL prove that the property heading, type, and description occur
+inside the generated virtual typedef page.  Callback assertions SHALL prove named
+page creation, parameter and return sections inside that page, and resolved
+references to the generated callback label.  Type-annotation assertions SHALL prove
+that the maintained `@type` record remains unchanged through the filter and that
+Doxygen attaches the configured `Type` paragraph and retained expression to the
+documented symbol.  CI SHALL exercise this path under both portable-AWK
+implementations.  Keep this surface separate from `make test` so textual filter
+failures and downstream Doxygen failures remain independently diagnosable.
+
+ADR-025 adds generated-artifact parity surfaces.  Use:
+
+```sh
+make test-dist AWK_BIN=mawk
+make test-dist AWK_BIN=gawk
+make test-dist-doxygen AWK_BIN=mawk
+make test-dist-doxygen AWK_BIN=gawk
+```
+
+`test-dist` validates artifact shape, all adjacent checksums, and the full TAP suite
+against development, ordinary, and minified artifacts.  `test-dist-doxygen`
+exercises each generated artifact through the same Doxygen integration contract.
+CI runs both artifact surfaces under `mawk` and GNU awk after `make all`.
 
 ## Project Self-Documentation
 
@@ -296,10 +380,9 @@ other.
 
 ## Deferred Infrastructure
 
-Generated consumer artifacts, checksums, semantic-version release publication,
-and release-artifact canaries remain deferred under ADR-012 and ADR-015.  Issue #17
-tracks a future dedicated build/distribution increment.  Do not add no-op
-compatibility targets merely to make copied workflows succeed.
+Semantic-version release publication and release-artifact canaries remain deferred.
+Issue #19 tracks the dedicated JavaScript release-publication increment.  Do not
+reactivate copied Python release automation or add no-op compatibility targets.
 
 ## Engineering Approach
 
@@ -307,5 +390,5 @@ Keep changes surgical and reviewable.  Accuracy is more important than apparent
 completeness.  Distinguish implemented behavior from planned behavior, state
 uncertainty explicitly, and do not widen the parser, generated representation,
 native-compatible or consumer-alias support boundary, virtual-type entity model,
-consumer configuration, or documentation boundary without governance and focused
-executable evidence.
+consumer configuration, build/distribution contract, or release boundary without
+governance and focused executable evidence.

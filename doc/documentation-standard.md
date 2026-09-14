@@ -11,8 +11,11 @@ boundary rather than in a second maintained documentation dialect.
 
 The shared standard defines the maintained-source contract.  It does not, by
 itself, expand the implemented capabilities of `doxygen-javascript.awk` or the
-checked-in Doxygen consumer configuration.  Support remains governed by accepted
-repository-specific ADRs and executable regression tests.
+governed Doxygen alias configuration.  Support remains governed by accepted
+repository-specific ADRs and executable regression tests.  ADR-025 clarifies that
+the checked-in `doxygen-javascript.conf` file is repository reference/integration
+data; downstream consumers maintain the required aliases in their own Doxyfile
+while using one Bashdeps-managed JavaScript filter artifact.
 
 ADR-012 establishes the filter and TAP regression boundary.  ADR-013 adds the
 canonical required-parameter form:
@@ -87,8 +90,8 @@ Doxygen-facing command on the same physical source line:
 ```
 
 Maintained JavaScript must continue to use `@yields`; `@jsyields` is derivative
-syntax used only at the Doxygen boundary.  Consumers that process translated
-yields must load `doxygen-javascript.conf` or an exactly equivalent alias:
+syntax used only at the Doxygen boundary.  A downstream consumer that processes
+translated yields must define an equivalent alias in its own Doxyfile:
 
 ```text
 ALIASES += jsyields="@par Yields^^"
@@ -143,11 +146,11 @@ The generated representation therefore must not fabricate a JavaScript class,
 struct, interface, function, variable, or native typedef declaration merely to
 create a Doxygen symbol.
 
-Doxygen consumers that process translated typedefs must load
-`doxygen-javascript.conf` or an exactly equivalent alias.  Generated page labels
-are deterministic implementation details used by Doxygen for navigation and
-`@ref` targets; they are not maintained-source API and source authors should not be
-required to write or know them.
+Doxygen consumers that process translated typedefs must define the governed
+`jstypedef` alias in their own Doxyfile.  Generated page labels are deterministic
+implementation details used by Doxygen for navigation and `@ref` targets; they are
+not maintained-source API and source authors should not be required to write or
+know them.
 
 ADR-022 adds canonical child properties for governed virtual typedefs:
 
@@ -162,7 +165,7 @@ established in the same JSDoc block.  The generated representation is:
 @jsproperty{Type||name||Description.}
 ```
 
-on the same physical line.  The consumer alias renders a `Property: name`
+on the same physical line.  The consumer Doxyfile alias renders a `Property: name`
 paragraph on the existing virtual typedef page and preserves the maintained type
 and description as visible documentation.  The property does not become a fake
 JavaScript member, field, variable, accessor, or standalone Doxygen page.
@@ -217,8 +220,8 @@ ADR-024 adds canonical JSDoc symbol type annotations:
 ```
 
 This capability deliberately does not add an AWK translation.  The maintained
-JSDoc record passes through `doxygen-javascript.awk` unchanged and the checked-in
-Doxygen consumer configuration supplies the presentation contract:
+JSDoc record passes through `doxygen-javascript.awk` unchanged and the consumer
+Doxyfile supplies the presentation contract:
 
 ```text
 ALIASES += type="@par Type^^"
@@ -256,12 +259,32 @@ callback namepaths, modules, inline tags, automatic type-expression linking, and
 other JSDoc forms must be claimed only when the repository has corresponding
 accepted governance and executable evidence.
 
+## Consumer Doxyfile Configuration
+
+ADR-025 preserves the sibling-project downstream workflow.  A consuming repository
+uses `bashdeps` to materialize one released JavaScript filter, conventionally at:
+
+```text
+vendor/javascript-doxygen.awk
+```
+
+The consumer owns its Doxyfile.  That Doxyfile maps `*.js` input to Doxygen's
+JavaScript parser, applies the vendored filter, and defines the aliases required by
+current governed representations.  The repository README contains the exact current
+consumer setup block.
+
+`doxygen-javascript.conf` is the repository's canonical reference and integration-
+test copy of those aliases.  It is not a second Bashdeps dependency and is not part
+of the one-file runtime filter contract.
+
 ## JavaScript/Doxygen integration
 
 ADR-018 establishes executable downstream evidence for governed translation forms.
 The integration configuration beneath `test/doxygen/` keeps JavaScript as the
-parsed source language by using Doxygen's JavaScript parser and applies
-`doxygen-javascript.awk` only as an input filter.
+parsed source language by using Doxygen's JavaScript parser and applies the selected
+JavaScript filter only as an input-filter documentation translator.  Repository
+integration tests include `doxygen-javascript.conf` so the reference alias block is
+exercised end to end.
 
 The integration suite generates Doxygen XML and checks semantic structure rather
 than relying only on filtered source text.  The contract verifies named parameter
