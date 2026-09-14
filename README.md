@@ -14,9 +14,11 @@ virtual typedefs governed by ADR-022, canonical named `@callback` contracts
 governed by ADR-023, and canonical `@type` annotations governed by ADR-024.
 ADR-018 exercises governed forms through Doxygen's JavaScript parser, ADR-025
 establishes generated development, ordinary, and minified build artifacts with
-adjacent SHA-256 files, and ADR-026 publishes those exact artifacts through the
-semantic-version release workflow.  Unsupported forms remain unchanged.  The
-filter does not infer JavaScript semantics or claim complete JSDoc coverage.
+adjacent SHA-256 files, ADR-026 publishes those exact artifacts through the
+semantic-version release workflow, and ADR-027 normalizes generated, released, and
+vendored artifact names to the sibling `doxygen-<language>.awk` convention.
+Unsupported forms remain unchanged.  The filter does not infer JavaScript semantics
+or claim complete JSDoc coverage.
 
 ## Current capability
 
@@ -221,7 +223,7 @@ released JavaScript filter and materialize it beneath its own `vendor/` director
 conventionally as:
 
 ```text
-vendor/javascript-doxygen.awk
+vendor/doxygen-javascript.awk
 ```
 
 The consuming repository owns its Doxyfile.  Configure JavaScript parsing and the
@@ -230,7 +232,7 @@ representations:
 
 ```text
 EXTENSION_MAPPING = js=JavaScript
-FILTER_PATTERNS   = *.js="awk -f vendor/javascript-doxygen.awk --"
+FILTER_PATTERNS   = *.js="awk -f vendor/doxygen-javascript.awk --"
 
 ALIASES += jsyields="@par Yields^^"
 ALIASES += jstypedef{3||}="@page \1 \2^^@par JSDoc virtual type^^Base type: \3."
@@ -248,9 +250,9 @@ their own Doxyfile.
 
 ## Build artifacts
 
-ADR-025 establishes a local deterministic build surface.  `awk-minifier` is pinned
-in `dependencies.txt` and synchronized through `bashdeps` as
-`vendor/awk-minifier.awk`.
+ADR-025 establishes a local deterministic build surface, with artifact naming
+normalized by ADR-027.  `awk-minifier` is pinned in `dependencies.txt` and
+synchronized through `bashdeps` as `vendor/awk-minifier.awk`.
 
 From an unprepared checkout, run:
 
@@ -261,12 +263,12 @@ make all
 `make all` prepares the pinned build dependency and creates:
 
 ```text
-dist/javascript-doxygen.dev.awk
-dist/javascript-doxygen.dev.awk.sha256
-dist/javascript-doxygen.awk
-dist/javascript-doxygen.awk.sha256
-dist/javascript-doxygen.min.awk
-dist/javascript-doxygen.min.awk.sha256
+dist/doxygen-javascript.dev.awk
+dist/doxygen-javascript.dev.awk.sha256
+dist/doxygen-javascript.awk
+dist/doxygen-javascript.awk.sha256
+dist/doxygen-javascript.min.awk
+dist/doxygen-javascript.min.awk.sha256
 ```
 
 The development artifact contains the complete documented maintained filter plus
@@ -297,17 +299,23 @@ make test-dist-doxygen AWK_BIN=gawk
 
 ## Releases
 
-ADR-026 publishes the exact ADR-025 outputs through the semantic-version workflow.
-The ordinary release asset:
+ADR-026 publishes the generated build outputs through the semantic-version
+workflow, with current asset naming normalized by ADR-027.  The ordinary release
+asset:
 
 ```text
-javascript-doxygen.awk
+doxygen-javascript.awk
 ```
 
 is the canonical normal `bashdeps` consumer artifact.  Releases also publish the
 `.dev` and `.min` variants for inspection or deliberate alternate use, together
 with one `.sha256` file for each AWK artifact.  Publishing those variants does not
 change the normal one-file runtime dependency model.
+
+Release v0.0.3 remains historically valid with the earlier
+`javascript-doxygen*.awk` asset names.  Releases governed by ADR-027 use only the
+normalized `doxygen-javascript*.awk` names; published historical assets are not
+renamed or replaced.
 
 The release workflow calculates the prospective semantic version without creating
 a tag, validates maintained source plus all three generated filters under both
@@ -317,10 +325,11 @@ A dependent post-publication canary downloads the public release assets, verifie
 all three hashes, and repeats TAP and Doxygen integration against every downloaded
 filter under both supported AWK implementations.
 
-A normal consuming repository should pin a specific release of
-`javascript-doxygen.awk` in its `bashdeps` manifest using the public release-asset
-URL and the digest from `javascript-doxygen.awk.sha256`.  Consumers should not pin
-`main`, `latest`, or another moving reference.
+A normal consuming repository should pin a specific current release of
+`doxygen-javascript.awk` in its `bashdeps` manifest using the public release-asset
+URL and the digest from `doxygen-javascript.awk.sha256`.  Consumers remaining on
+v0.0.3 continue to use that release's historical `javascript-doxygen.awk` filename.
+Consumers should not pin `main`, `latest`, or another moving reference.
 
 ## Regression tests
 
@@ -437,10 +446,12 @@ Pages.  ADR-015 governs this self-documentation boundary.
 
 ## Deferred capabilities
 
-The repository was initialized from `python-doxygen`, so some copied Python files,
-ADRs, tests, and workflow history remain while the project is migrated.  Their
+The repository was initialized from `python-doxygen`, so some copied Python ADRs,
+tests, and historical references remain while the project is migrated.  Their
 presence does not mean that `javascript-doxygen` implements Python behavior or that
-those interfaces are supported here.
+those interfaces are supported here.  ADR-027 removes the copied root
+`doxygen-python.awk` implementation now that the JavaScript filter has its own
+complete build and release lifecycle.
 
 The following capabilities remain deliberately deferred:
 
@@ -461,8 +472,9 @@ pass-through, ADR-021 governs related-page representation for virtual typedefs,
 ADR-022 governs canonical child properties of those virtual typedefs, ADR-023
 governs named virtual callback pages, ADR-024 governs byte-preserved canonical
 `@type` annotations rendered through consumer configuration, ADR-025 governs the
-local generated distribution build surface, and ADR-026 governs semantic-version
-release publication and the exact-public-bytes canary.
+local generated distribution build surface, ADR-026 governs semantic-version
+release publication and the exact-public-bytes canary, and ADR-027 governs the
+normalized Doxygen-first artifact and consumer filename convention.
 
 ## Coding standards and governance
 

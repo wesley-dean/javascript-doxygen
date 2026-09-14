@@ -15,7 +15,9 @@ governed Doxygen alias configuration.  Support remains governed by accepted
 repository-specific ADRs and executable regression tests.  ADR-025 clarifies that
 the checked-in `doxygen-javascript.conf` file is repository reference/integration
 data; downstream consumers maintain the required aliases in their own Doxyfile
-while using one Bashdeps-managed JavaScript filter artifact.
+while using one Bashdeps-managed JavaScript filter artifact.  ADR-027 normalizes
+that artifact and its normal vendored path to the sibling
+`doxygen-<language>.awk` naming convention.
 
 ADR-012 establishes the filter and TAP regression boundary.  ADR-013 adds the
 canonical required-parameter form:
@@ -261,11 +263,12 @@ accepted governance and executable evidence.
 
 ## Consumer Doxyfile Configuration
 
-ADR-025 preserves the sibling-project downstream workflow.  A consuming repository
-uses `bashdeps` to materialize one released JavaScript filter, conventionally at:
+ADR-025 preserves the sibling-project downstream workflow, with the artifact name
+normalized by ADR-027.  A consuming repository uses `bashdeps` to materialize one
+released JavaScript filter, conventionally at:
 
 ```text
-vendor/javascript-doxygen.awk
+vendor/doxygen-javascript.awk
 ```
 
 The consumer owns its Doxyfile.  That Doxyfile maps `*.js` input to Doxygen's

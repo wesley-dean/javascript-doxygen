@@ -19,12 +19,13 @@ exercises governed forms through Doxygen's JavaScript parser, ADR-020 establishe
 native-compatible pass-through for proven `@deprecated` and `@see` forms, ADR-024
 establishes consumer-alias rendering for byte-preserved canonical `@type`
 annotations, ADR-025 establishes generated development, ordinary, and minified AWK
-build artifacts with adjacent SHA-256 files, and ADR-026 governs semantic-version
-publication of those exact artifacts plus post-publication canary evidence.
-Unsupported JSDoc constructs remain visible unchanged.  Do not claim broader JSDoc
-translation, native compatibility, consumer-alias support, JavaScript semantic
-analysis, or release behavior beyond the accepted governance and executable
-evidence.
+build artifacts with adjacent SHA-256 files, ADR-026 governs semantic-version
+publication of those exact artifacts plus post-publication canary evidence, and
+ADR-027 normalizes generated, released, and vendored artifact names to the sibling
+`doxygen-<language>.awk` convention.  Unsupported JSDoc constructs remain visible
+unchanged.  Do not claim broader JSDoc translation, native compatibility,
+consumer-alias support, JavaScript semantic analysis, or release behavior beyond
+the accepted governance and executable evidence.
 
 ## Governing Documentation
 
@@ -93,7 +94,9 @@ JSDoc record unchanged and defining its Doxygen presentation entirely in consume
 configuration.  ADR-025 establishes the JavaScript-specific generated artifact,
 checksum, build-dependency, and source/dist parity contract.  ADR-026 publishes
 those generated artifacts as semantic-versioned GitHub release assets and adds a
-post-publication exact-public-bytes canary.
+post-publication exact-public-bytes canary.  ADR-027 supersedes only the artifact
+and consumer filename portions of ADR-025 and ADR-026, standardizing them on the
+Doxygen-first sibling convention and removing the copied root Python filter.
 
 Supported parameter, virtual typedef, governed typedef-property, and callback names
 remain simple JavaScript identifiers.  The filter keeps type expressions and
@@ -208,10 +211,12 @@ filtered text with source locations and source-browser anchors, so proposals tha
 add or remove physical lines require explicit governance plus integration evidence
 rather than being treated as harmless formatting changes.
 
-Copied Python implementation, tests, ADRs, and workflow history may remain during
+Historical copied Python tests, ADRs, and workflow references may remain during
 migration as reference material.  They are not current JavaScript capability
 claims where ADR-012 and later JavaScript-specific decisions supersede their
-Python-specific contracts.
+Python-specific contracts.  ADR-027 removes the copied root `doxygen-python.awk`
+implementation; the independent `python-doxygen` repository is the maintained
+source for that filter.
 
 ## Consumer Integration
 
@@ -220,7 +225,7 @@ uses `bashdeps` to pin one released JavaScript filter and materializes that one
 runtime dependency conventionally as:
 
 ```text
-vendor/javascript-doxygen.awk
+vendor/doxygen-javascript.awk
 ```
 
 The consumer owns its Doxyfile.  It SHALL map JavaScript files to Doxygen's
@@ -235,15 +240,16 @@ The downstream runtime dependency model remains exactly one AWK filter file.
 
 ## Build and Distribution
 
-ADR-025 establishes the local generated-artifact lifecycle.  The build outputs are:
+ADR-025 establishes the local generated-artifact lifecycle; ADR-027 normalizes its
+filenames.  The current build outputs are:
 
 ```text
-dist/javascript-doxygen.dev.awk
-dist/javascript-doxygen.dev.awk.sha256
-dist/javascript-doxygen.awk
-dist/javascript-doxygen.awk.sha256
-dist/javascript-doxygen.min.awk
-dist/javascript-doxygen.min.awk.sha256
+dist/doxygen-javascript.dev.awk
+dist/doxygen-javascript.dev.awk.sha256
+dist/doxygen-javascript.awk
+dist/doxygen-javascript.awk.sha256
+dist/doxygen-javascript.min.awk
+dist/doxygen-javascript.min.awk.sha256
 ```
 
 The development artifact retains all maintained AWK documentation.  The ordinary
@@ -276,16 +282,23 @@ file in ordinary `sha256sum`-compatible format.
 
 ## Release Publication
 
-ADR-026 governs the semantic-version release interface.  The versioning workflow
-runs on pushes to `main` and may be invoked manually.  It SHALL calculate the
-prospective version without creating a tag, validate maintained source, run
-`make all VERSION=<version> AWK_BIN=mawk`, and exercise the exact generated
-artifacts under both `mawk` and GNU awk plus Doxygen before creating a release.
+ADR-026 governs the semantic-version release interface, with current filenames
+normalized by ADR-027.  The versioning workflow runs on pushes to `main` and may be
+invoked manually.  It SHALL calculate the prospective version without creating a
+tag, validate maintained source, run `make all VERSION=<version> AWK_BIN=mawk`, and
+exercise the exact generated artifacts under both `mawk` and GNU awk plus Doxygen
+before creating a release.
 
-The release SHALL publish exactly the three ADR-025 AWK artifacts and their three
-adjacent SHA-256 files.  The ordinary `javascript-doxygen.awk` file is the canonical
+The release SHALL publish exactly the three current AWK artifacts and their three
+adjacent SHA-256 files.  The ordinary `doxygen-javascript.awk` file is the canonical
 normal Bashdeps consumer artifact.  Development and minified files are alternate
 published representations and do not add runtime dependencies.
+
+Release v0.0.3 remains historically valid with its original
+`javascript-doxygen*.awk` filenames.  Beginning with the first ADR-027 release, the
+release interface uses only the normalized `doxygen-javascript*.awk` names.
+Historical release assets SHALL NOT be renamed or replaced merely to match the
+current convention.
 
 The release tag SHALL be created only after validation succeeds and SHALL identify
 the exact validated commit.  Workflow YAML SHALL NOT duplicate Make-owned build,
@@ -299,8 +312,9 @@ repository state.
 
 `doxygen-javascript.conf` remains repository reference/integration data and SHALL
 NOT become a release runtime asset.  Normal consumers pin a specific semantic
-version of `javascript-doxygen.awk`, its public release URL, and its expected digest
-through Bashdeps.
+version of `doxygen-javascript.awk`, its public release URL, and its expected digest
+through Bashdeps.  Consumers remaining on v0.0.3 use that release's historical
+`javascript-doxygen.awk` name.
 
 ## Portability and Testing
 
@@ -413,8 +427,8 @@ other.
 ## Deferred Infrastructure
 
 Do not reactivate copied Python-specific release paths or add no-op compatibility
-targets.  Future release changes SHALL preserve ADR-025 and ADR-026 unless a new or
-superseding accepted decision explicitly changes the public contract.
+targets.  Future release changes SHALL preserve ADR-025, ADR-026, and ADR-027 unless
+a new or superseding accepted decision explicitly changes the public contract.
 
 ## Engineering Approach
 

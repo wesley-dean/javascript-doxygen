@@ -12,9 +12,9 @@ INTEGRATION_OUT := test/doxygen/out
 DOXYGEN_JAVASCRIPT_FILTER ?= $(SOURCE_FILTER)
 
 DIST_DIR := dist
-DIST_DEV_SCRIPT := $(DIST_DIR)/javascript-doxygen.dev.awk
-DIST_SCRIPT := $(DIST_DIR)/javascript-doxygen.awk
-DIST_MIN_SCRIPT := $(DIST_DIR)/javascript-doxygen.min.awk
+DIST_DEV_SCRIPT := $(DIST_DIR)/doxygen-javascript.dev.awk
+DIST_SCRIPT := $(DIST_DIR)/doxygen-javascript.awk
+DIST_MIN_SCRIPT := $(DIST_DIR)/doxygen-javascript.min.awk
 DIST_SCRIPTS := $(DIST_DEV_SCRIPT) $(DIST_SCRIPT) $(DIST_MIN_SCRIPT)
 DIST_CHECKSUMS := $(addsuffix .sha256,$(DIST_SCRIPTS))
 
@@ -98,7 +98,7 @@ $(DIST_MIN_SCRIPT): $(DIST_SCRIPT) $(AWK_MINIFIER)
 		printf '%s\n' '# Build date: $(BUILD_DATE)'; \
 		printf '%s\n' '# Build commit: $(BUILD_COMMIT)'; \
 		printf '%s\n' '# Minifier: AWK Minifier v$(AWK_MINIFIER_VERSION)'; \
-		printf '%s\n' '# Minifier input: javascript-doxygen.awk body'; \
+		printf '%s\n' '# Minifier input: doxygen-javascript.awk body'; \
 		printf '%s\n' '# End generated header.'; \
 		cat "$$body"; \
 	} >"$@.tmp"; \
