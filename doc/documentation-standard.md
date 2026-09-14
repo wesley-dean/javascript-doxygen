@@ -149,16 +149,39 @@ are deterministic implementation details used by Doxygen for navigation and
 `@ref` targets; they are not maintained-source API and source authors should not be
 required to write or know them.
 
-The initial typedef boundary does not establish `@property`, `@callback`, general
+ADR-022 adds canonical child properties for governed virtual typedefs:
+
+```text
+@property {Type} name - Description.
+```
+
+A property is translated only after a supported ADR-021 typedef has already been
+established in the same JSDoc block.  The generated representation is:
+
+```text
+@jsproperty{Type||name||Description.}
+```
+
+on the same physical line.  The consumer alias renders a `Property: name`
+paragraph on the existing virtual typedef page and preserves the maintained type
+and description as visible documentation.  The property does not become a fake
+JavaScript member, field, variable, accessor, or standalone Doxygen page.
+
+A canonical property outside a governed virtual typedef block remains unchanged.
+Dotted or optional property names, defaults, nested structural forms, alias-field
+content containing the current `||` transport separator, and other complex
+property forms remain outside the accepted boundary.
+
+The current typedef/property boundary does not establish `@callback`, general
 `@type`, or automatic linking of arbitrary type expressions to virtual typedef
 pages.  Those constructs remain valid maintained JSDoc under the shared standard,
 but repository support requires separate governance and executable evidence.
 
-Unsupported parameter and typedef forms remain unchanged.  Dotted property names,
-optional dotted properties, rest parameters, destructured parameters, unsupported
-typedef names, callbacks, properties, modules, inline tags, general `@type`, and
-other JSDoc forms must be claimed only when the filter has corresponding accepted
-governance and executable evidence.
+Unsupported parameter, typedef, and property forms remain unchanged.  Dotted
+property names, optional dotted properties, rest parameters, destructured
+parameters, unsupported typedef names, standalone properties, callbacks, modules,
+inline tags, general `@type`, and other JSDoc forms must be claimed only when the
+filter has corresponding accepted governance and executable evidence.
 
 ## JavaScript/Doxygen integration
 
@@ -172,8 +195,9 @@ than relying only on filtered source text.  The contract verifies named paramete
 documentation, visible optional/default prose, return documentation in a Doxygen
 return section, exception documentation in a Doxygen exception parameter list, a
 dedicated alias-backed `Yields` paragraph under ADR-019, native deprecation and
-see-also structure under ADR-020, and a named related-page representation for
-virtual typedefs under ADR-021.
+see-also structure under ADR-020, a named related-page representation for virtual
+typedefs under ADR-021, and structured property paragraphs on those pages under
+ADR-022.
 
 Use:
 
@@ -186,14 +210,17 @@ These tests complement the TAP regression suite; they do not replace it.  TAP
 fixtures prove the filter's textual transformation or pass-through boundary and
 physical line preservation, while the Doxygen integration surface proves that the
 downstream documentation engine interprets selected governed output as intended.
+For typedef properties, integration assertions target the generated virtual typedef
+page directly so the property heading, type, and description cannot pass merely by
+appearing elsewhere in generated source XML.
 
 All current governed transformations and native-compatible forms preserve one
 physical output record for every input record.  `test/run-tests.sh` checks physical
 line-count equality for every fixture.  That line correspondence is part of the
 integration boundary because Doxygen associates filtered input with source
-locations and source-browser anchors.  ADR-019 and ADR-021 use Doxygen alias
-expansion so logical documentation structure does not require the filter to add
-physical lines.
+locations and source-browser anchors.  ADR-019, ADR-021, and ADR-022 use Doxygen
+alias expansion so logical documentation structure does not require the filter to
+add physical lines.
 
 A future representation that adds or removes physical lines requires a new
 decision and integration evidence; it must not be inherited mechanically from a
@@ -219,7 +246,7 @@ The generated ADR landing page and reference output are not maintained source.
 
 Successful self-documentation does not expand the supported JSDoc surface and does
 not substitute for the JavaScript/Doxygen integration evidence governed by
-ADR-018 through ADR-021.
+ADR-018 through ADR-022.
 
 Maintained AWK implementation source is governed by:
 
