@@ -11,111 +11,123 @@ complete library is committed for inspectability even though presence does not
 imply applicability, and no permanent standards-update machinery is installed.
 See [ADR-011](adr/ADR-011-adopt-shared-coding-standards.md).
 
+## JavaScript filter bootstrap and TAP regression contract
+
+ADR-012 establishes `doxygen-javascript.awk` as the maintained JavaScript filter
+and deliberately limits the first milestone to source pass-through.  Focused
+fixtures live beneath `test/fixtures/`, golden output beneath `test/expected/`,
+and `test/run-tests.sh` emits TAP version 13; `make test` runs the same suite with
+portable AWK implementations.  Python-specific documentation and release
+workflows are deferred rather than satisfied with no-op compatibility targets,
+and copied Python decisions remain migration history where ADR-012 supersedes
+their language-specific contracts.  See
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
+
 ## Capability scope and epistemic honesty
 
 The project distinguishes implemented behavior from planned behavior and makes
-capability claims only when evidence supports them.  The filter must remain clear
-about uncertainty and must not present itself as a complete Python parser.  See
-[ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md).
+capability claims only when evidence supports them.  ADR-012 applies this general
+principle to the JavaScript migration by limiting current claims to tested
+pass-through behavior and explicitly deferring JSDoc translation and Doxygen
+integration.  See [ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md)
+and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Supported Python documentation scope
 
-ADR-001 established the milestone-1 boundary: conservatively identifiable
-triple-double-quoted module, class, function, and method docstrings with three
-structured field translations.  ADR-009 supersedes only the portions of that
-boundary covering raw-prefix recognition, deterministic one-line prose docstrings,
-and single-physical-line declaration headers; ADR-001 remains authoritative for
-its conservative documentation-position, runtime-string, diagnostic, and
-structured-field rules until separately superseded.  See
-[ADR-001](adr/ADR-001-define-supported-python-documentation-scope.md) and
-[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
+ADR-001 established the copied Python milestone-1 boundary: conservatively
+identifiable triple-double-quoted module, class, function, and method docstrings
+with three structured field translations.  ADR-009 supersedes only the portions
+of that boundary covering raw-prefix recognition, deterministic one-line prose
+docstrings, and single-physical-line declaration headers.  ADR-012 supersedes
+these Python-specific capability claims for the maintained JavaScript filter; the
+older decisions remain migration history and reference material.  See
+[ADR-001](adr/ADR-001-define-supported-python-documentation-scope.md),
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md), and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Doxygen-facing representation
 
-The filter preserves Python declarations and docstrings while translating only
-governed field syntax.  Early integration proved that the translated text
-survived the Doxygen pipeline; follow-on issue-5 testing established the stronger
-configuration contract that Doxygen integrations expecting translated commands to
-be interpreted structurally must set `PYTHON_DOCSTRING = NO`.  The maintained
-integration suite now exercises that configuration directly.  See
-[ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md).
+The copied Python filter preserves Python declarations and docstrings while
+translating governed field syntax, with `PYTHON_DOCSTRING = NO` required by its
+maintained Doxygen integration.  That representation remains historical reference
+for this repository.  ADR-012 establishes no JavaScript Doxygen-facing
+translation yet.  See [ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md)
+and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Yields translation
 
-ADR-003 now governs `:yields:` as a dedicated Doxygen `Yields` paragraph rather
-than return documentation.  The representation may add one physical output line
-per translated yields field because Doxygen requires the paragraph title and body
-to be separate for the intended structure; other supported structured fields
-continue to preserve line count.  Continuation prose remains byte-preserved when
-Doxygen can retain its association without extra translator state.  See
-[ADR-003](adr/ADR-003-define-yields-translation.md).
+ADR-003 governs the copied Python `:yields:` representation as a dedicated
+Doxygen `Yields` paragraph.  ADR-012 does not adopt that language-specific
+translation for JavaScript; the decision remains migration history until a
+JavaScript-specific contract is accepted.  See
+[ADR-003](adr/ADR-003-define-yields-translation.md) and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Versioned consumer artifact
 
-Maintained source and consumer bytes are separate.  `make build` produces
-`dist/doxygen-python.awk` with comment-only provenance, and the same semantic
-suite exercises source and dist.  ADR-007 later supersedes only ADR-004's initial
-deferral of release publication; the artifact boundary remains unchanged.  See
-[ADR-004](adr/ADR-004-build-and-release-versioned-filter.md).
+ADR-004 established the copied Python source/dist artifact boundary, and ADR-007
+later governed release publication of those Python artifacts.  ADR-012 defers a
+JavaScript consumer-artifact and release contract until corresponding behavior is
+defined and tested.  See
+[ADR-004](adr/ADR-004-build-and-release-versioned-filter.md),
+[ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md), and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Behavior-focused fixtures
 
-Regression coverage retains small fixtures that each protect a narrow public
-behavior.  Golden output, diagnostics, runtime-string non-recognition, and
-source/dist parity define the supported contract rather than helper structure.
-ADR-008 supplements these fixtures with larger program-level scenarios without
-replacing their role.  See
-[ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md).
+ADR-005 established the value of small behavior-focused fixtures.  ADR-012 keeps
+that principle while replacing the copied Python fixture paths for maintained
+JavaScript behavior with `test/fixtures/` and `test/expected/`, plus TAP output
+from `test/run-tests.sh`.  ADR-008 remains historical support for supplementary
+scenario-level coverage.  See
+[ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md),
+[ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md), and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Shared project infrastructure
 
-ADR-006 directs the repository to adopt the applicable Make, regression-test,
-pinned documentation dependency, generated ADR navigation, Doxygen reference,
-and Pages-publication patterns from `awk-doxygen` and `bash-doxygen`.  Those
-patterns are now represented by Make-driven source/dist testing, a separate
-Python/Doxygen integration fixture, `bashdeps`-managed documentation dependencies,
-generated ADR navigation, reference-document generation, documentation canaries,
-and Pages deployment.  Sibling interfaces without a coherent Python purpose,
-such as `--compact`, are deliberately not copied.  See
-[ADR-006](adr/ADR-006-adopt-sibling-build-test-and-documentation-infrastructure.md).
+ADR-006 directs reuse of coherent sibling-project infrastructure rather than
+mechanical parity.  ADR-012 applies that principle to the JavaScript bootstrap by
+retaining portable-AWK testing while explicitly deferring inherited Python-only
+documentation and release automation.  See
+[ADR-006](adr/ADR-006-adopt-sibling-build-test-and-documentation-infrastructure.md)
+and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Release publication and downstream pinning
 
-ADR-007 requires semantic-version releases to publish the tested
-`doxygen-python.awk` artifact and its SHA-256 checksum as public release assets.
-Downstream repositories pin a specific version, public release URL, and digest in
-their `bashdeps` manifests; their builds retrieve and verify those exact bytes
-without GitHub authentication or version discovery.  Release-artifact canaries
-may independently verify publication packaging, but they are not part of the
-downstream dependency-resolution path.  See
-[ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md).
+ADR-007 governs publication and downstream pinning for the copied Python release
+artifact.  ADR-012 defers any equivalent JavaScript release interface; no
+`javascript-doxygen` consumer artifact should be treated as published or stable
+until a later accepted decision establishes that contract.  See
+[ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md) and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Scenario-level program regressions
 
-The regression suite also includes larger Python programs that combine previously
-governed behaviors in realistic sequences.  These scenarios exercise longer
-parser-state transitions and recovery while the small ADR-005 fixtures remain the
-primary executable specification for individual syntax claims.  The same harness
-runs both layers against maintained source and generated consumer bytes.  See
-[ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md).
+ADR-008 added larger Python program regressions alongside focused fixtures.  Those
+fixtures remain migration reference material.  ADR-012 currently governs only the
+focused JavaScript TAP suite and does not yet establish scenario-level JavaScript
+coverage.  See
+[ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md) and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Standards-conforming docstring recognition
 
-ADR-009 expands the recognition boundary to support ordinary and raw
-triple-double-quoted docstrings, makes one-line prose recognition deterministic,
-and allows conventional multi-line `def`, `async def`, and `class` headers to
-retain pending suite state through a physical line ending in the suite-opening
-colon.  Other prefixes and lexically ambiguous cases remain unsupported unless
-separately governed, preserving the portable-AWK and false-negative bias.  See
-[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md).
+ADR-009 expanded the copied Python docstring recognition boundary.  ADR-012 does
+not carry those Python-specific recognition rules into JavaScript; current
+JavaScript behavior remains pass-through until later governed JSDoc translations
+are added.  See
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md) and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
 ## Unannotated type fields
 
-ADR-010 translates maintained `:type name:` and `:rtype:` fields into dedicated
-Doxygen paragraphs titled `Type of name` and `Return type`.  The representation
-preserves the source's explicit type assertions without folding them into
-parameter or return prose, and each translated field may add one physical output
-line.  The filter does not determine whether annotations make those fields
-redundant or inconsistent; that semantic validation remains with Python-native
-tooling.  See
-[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md).
+ADR-010 translates copied Python `:type name:` and `:rtype:` fields into dedicated
+Doxygen paragraphs.  ADR-012 does not adopt an equivalent JavaScript type-field
+translation.  Any JSDoc type-expression behavior requires a later explicit
+decision and focused executable evidence.  See
+[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md) and
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).

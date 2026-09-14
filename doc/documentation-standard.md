@@ -1,34 +1,27 @@
-# Python Documentation Standard
+# JavaScript Documentation Standard Status
 
-The normative Python documentation standard adopted by this repository is the
-managed copy at:
+This repository has not yet adopted a normative JavaScript documentation standard.
 
-`doc/standards/python/documentation-standard.md`
+The managed shared standards snapshot beneath `doc/standards/` currently contains
+language-specific documentation standards for AWK, Bash, PHP, and Python, but no
+JavaScript documentation standard.  Presence of those standards in the snapshot
+does not make them applicable to maintained JavaScript source.
 
-That file is materialized from the concrete `coding_standards` release recorded in
-`.codingstandardrc`.  Its canonical upstream is
-`wesley-dean/coding_standards/standards/python/documentation-standard.md`.
+ADR-012 therefore keeps the current filter contract deliberately narrow:
+`doxygen-javascript.awk` performs source pass-through only.  The project does not
+yet claim support for any JSDoc tag grammar, type-expression syntax, inline tag,
+module convention, callback form, typedef form, or Doxygen-facing translation.
 
-The imported standard is authoritative for maintained Python content unless an
-accepted repository-specific ADR or explicit local policy refines or supersedes
-it.  Do not independently rewrite or weaken the imported contract.  Changes to
-the shared standard belong upstream; project-specific exceptions belong in this
-repository's governance.
+The intended architectural direction is to keep maintained JavaScript documentation
+JavaScript-native and perform any required compatibility translation at the
+Doxygen boundary.  That direction is not a substitute for a normative standard.
+A future JavaScript documentation standard should define the maintained source
+contract before the filter claims corresponding translation behavior.
 
-The adopted standard establishes Python docstrings as the maintained source of
-truth and uses triple-double-quoted docstrings with structured fields including:
+Maintained AWK implementation source is governed by:
 
-```text
-:param name: description
-:returns: description
-:raises ExceptionType: description
-:yields: description
-```
+`doc/standards/awk/documentation-standard.md`
 
-`python-doxygen` operates only at the documentation-generation boundary.  It
-translates the explicitly supported subset into a Doxygen-facing representation
-without requiring maintainers to keep a second Doxygen-specific documentation
-dialect.
-
-This adoption file is repository-specific guidance and is not a substitute for
-the complete managed standard.
+Shared-standard changes belong upstream in `wesley-dean/coding_standards`.
+Repository-specific exceptions or transition decisions belong in accepted local
+ADRs rather than edits beneath `doc/standards/`.

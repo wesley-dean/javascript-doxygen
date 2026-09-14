@@ -2,13 +2,17 @@
 
 ## Repository Purpose
 
-`python-doxygen` provides a documentation-led Doxygen input filter for Python.
-Maintained Python remains idiomatic Python; the filter translates supported
-docstring syntax only at the Doxygen boundary.
+`javascript-doxygen` provides a documentation-led Doxygen input filter for
+JavaScript.  Maintained JavaScript should remain idiomatic JavaScript; translation
+belongs at the Doxygen boundary rather than in a second maintained documentation
+dialect.
 
-The maintained filter is `doxygen-python.awk`.  It is a documentation translator,
-not a complete Python parser.  Capability claims must match tests and accepted
-ADRs.
+The maintained filter is `doxygen-javascript.awk`.
+
+The current bootstrap milestone implements pass-through only.  Do not claim JSDoc
+translation, JavaScript semantic analysis, Doxygen integration, generated consumer
+artifacts, or release support until executable evidence and governing decisions
+exist.
 
 ## Governing Documentation
 
@@ -17,15 +21,15 @@ Before changing the repository, review `README.md`, this file,
 every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
-compatibility, documentation-publication, or release changes require an ADR
-unless existing governance already covers the decision.
+compatibility, documentation-publication, or release changes require an ADR unless
+existing governance already covers the decision.
 
-Files under `doc/standards/` are governing project requirements, not suggestions,
-when they apply to maintained content.  General and cross-cutting standards apply
-where relevant; language-specific standards apply to maintained content in that
-language.  Presence in the complete released snapshot does not by itself make a
-standard applicable.  Content under `doc/standards/examples/` is illustrative and
-non-normative unless a governing standard explicitly says otherwise.
+Files under `doc/standards/` are governing project requirements when applicable.
+General and cross-cutting standards apply where relevant; language-specific
+standards apply only to maintained content in that language.  Presence in the
+complete released snapshot does not by itself make a standard applicable.
+Content beneath `doc/standards/examples/` is illustrative unless a governing
+standard explicitly says otherwise.
 
 Accepted repository-specific ADRs and explicit local policy may refine or
 supersede imported standards.  Do not silently deviate from an applicable
@@ -35,84 +39,65 @@ upstream release and archive digest for the managed snapshot.
 
 ## Documentation Standards
 
-The adopted Python documentation standard is materialized at
-`doc/standards/python/documentation-standard.md`; its canonical upstream is
-`wesley-dean/coding_standards/standards/python/documentation-standard.md`.
-`doc/documentation-standard.md` records this repository's adoption point.  Do not
-independently rewrite or weaken the imported Python contract here.
+No JavaScript documentation standard has been adopted by this repository yet.
+`doc/documentation-standard.md` records that status.  Until a JavaScript standard
+is adopted, do not infer a normative JSDoc subset from implementation ideas or
+copied Python documentation.
 
 Maintained AWK source follows
 `doc/standards/awk/documentation-standard.md`, whose canonical upstream is
-`wesley-dean/coding_standards/standards/awk/documentation-standard.md`.  The older
-`doc/awk-documentation-standard.md` path remains from the copied baseline and is
-not an independently mutable standards authority.  Documentation changes to
-`doxygen-python.awk` must preserve executable behavior unless the change is
-separately governed and tested as a behavior change.
+`wesley-dean/coding_standards/standards/awk/documentation-standard.md`.
 
 ## Architecture and Scope
 
-Preserve Python-native documentation as the human- and linter-facing source of
-truth.  Do not require Doxygen-specific Python docstrings or duplicate Doxygen
-comment blocks.  ADR-002 establishes the source-preserving Doxygen representation
-based on an executable integration experiment.
+ADR-012 establishes the current JavaScript bootstrap boundary.
 
-The filter is intentionally narrow.  Prefer false negatives and visible
-unsupported syntax to speculative semantic claims.  Do not add signature
-validation, type inference, inferred behavior, broad decorator semantics, or
-complete Python parsing without explicit governance.
+The filter currently passes newline-terminated JavaScript source records through
+without documentation transformation.  This is an executable bootstrap contract,
+not evidence of JSDoc compatibility.
 
-`:yields:` is outside milestone 1 under ADR-003.
+Future JSDoc translation should remain narrow and evidence-driven.  Prefer visible
+unsupported syntax to speculative semantic claims.  Do not add JavaScript parsing,
+type inference, inferred behavior, or broad JSDoc semantics without explicit
+governance and focused tests.
+
+Copied Python implementation, tests, ADRs, and workflow history may remain during
+migration as reference material.  They are not current JavaScript capability
+claims where ADR-012 supersedes their Python-specific contracts.
 
 ## Portability and Testing
 
 Portable AWK is the compatibility floor.  Production filter source must run under
 at least `mawk` and GNU awk.
 
-Behavior-focused fixtures live under `tests/python/`.  Fixtures protect public
-behavior, not helper structure.  The same semantic suite must run against
-maintained `doxygen-python.awk` and generated `dist/doxygen-python.awk`.
+Behavior-focused JavaScript fixtures live under `test/fixtures/`.  Golden filtered
+output lives under `test/expected/`.  `test/run-tests.sh` emits TAP version 13.
 
-Use `make test AWK_BIN=mawk` and `make test AWK_BIN=gawk`.  Preserve source-line
-correspondence where practical, and pass ordinary Python source outside translated
-docstrings through unchanged.  `make test-doxygen` exercises the selected Python
-filter against the focused Python/Doxygen integration fixture.
+Use:
 
-## Documentation Tooling
+```sh
+make test AWK_BIN=mawk
+make test AWK_BIN=gawk
+```
 
-Project reference documentation describes this repository's maintained AWK,
-Bash, Markdown, and ADR sources.  It is distinct from the Python-filter integration
-test.
+The current suite proves only representative pass-through behavior.  Add a focused
+fixture and expected output when adding each new supported translation behavior.
+Tests should protect externally observable behavior rather than internal helper
+structure.
 
-Documentation-only dependencies are pinned in `dependencies-docs.txt` and are
-materialized beneath `vendor/` by the SHA-256-pinned `bashdeps` bootstrap.  The
-set includes released `awk-doxygen`, released `bash-doxygen`, and released
-`adrctl`.  `make deps-docs` may use the network; `make deps-docs-check`,
-`make adr-index`, and `make docs` consume prepared state without silently
-repairing or advancing dependency pins.
+## Deferred Infrastructure
 
-Generated `doc/adr/README.md`, `doc/reference/`, and `vendor/` state is disposable
-and must remain ignored by Git.
+Automatic Python-specific documentation canaries and semantic-version release
+publication are deferred under ADR-012.  Do not add no-op compatibility targets
+merely to make copied workflows succeed.
 
-## Build and Release
-
-The maintained source and consumer outputs are `doxygen-python.awk`,
-`dist/doxygen-python.awk`, and `dist/doxygen-python.awk.sha256`.  `make build` is
-the canonical artifact build.  Build provenance is comments only and must not add
-executable AWK state.
-
-Semantic-version releases are a downstream dependency interface.  The versioning
-workflow must validate maintained and generated bytes, verify the checksum, and
-publish both `doxygen-python.awk` and `doxygen-python.awk.sha256` as release
-assets.  Other repositories may pin those exact release assets with `bashdeps`,
-so a version tag without the governed assets is an incomplete release.
-
-Exact published release bytes must be checksum-verified and exercised through the
-Python/Doxygen integration fixture.  Do not substitute a tag checkout for this
-asset-level validation.
+Doxygen integration, generated consumer artifacts, checksums, documentation
+publication, and release canaries should be re-enabled only after JavaScript-
+specific contracts exist and are tested.
 
 ## Engineering Approach
 
 Keep changes surgical and reviewable.  Accuracy is more important than apparent
 completeness.  Distinguish implemented behavior from planned behavior, state
-uncertainty explicitly, and do not widen the parser boundary without governance
-and focused fixtures.
+uncertainty explicitly, and do not widen the parser or documentation boundary
+without governance and focused executable evidence.
