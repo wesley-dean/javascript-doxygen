@@ -24,15 +24,27 @@ and copied Python decisions remain migration history where ADR-012 supersedes
 their language-specific contracts.  See
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
 
+## Required JSDoc parameter translation
+
+ADR-013 adds the first structured JavaScript documentation translation.  Canonical
+required parameters written as `@param {Type} name - Description.` are rewritten
+at the Doxygen boundary to a line-preserving representation with the parameter
+name first and the maintained JSDoc type retained as visible prose.  The first
+recognition boundary is intentionally narrow: unsupported forms, including
+optional/defaulted parameters, remain unchanged and visible.  See
+[ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md).
+
 ## Capability scope and epistemic honesty
 
 The project distinguishes implemented behavior from planned behavior and makes
-capability claims only when evidence supports them.  ADR-012 applies this general
-principle to the JavaScript migration by limiting current claims to tested
-pass-through behavior and explicitly deferring JSDoc translation and Doxygen
-integration.  See [ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md)
-and
-[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
+capability claims only when evidence supports them.  ADR-012 established the
+initial pass-through baseline, while ADR-013 adds only the tested canonical
+required-parameter translation and retains visible pass-through for unsupported
+forms.  Broader JSDoc translation and Doxygen integration remain deferred until
+separately governed and proven.  See
+[ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md),
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
+and [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md).
 
 ## Supported Python documentation scope
 
@@ -52,10 +64,12 @@ older decisions remain migration history and reference material.  See
 The copied Python filter preserves Python declarations and docstrings while
 translating governed field syntax, with `PYTHON_DOCSTRING = NO` required by its
 maintained Doxygen integration.  That representation remains historical reference
-for this repository.  ADR-012 establishes no JavaScript Doxygen-facing
-translation yet.  See [ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md)
-and
-[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
+for this repository.  ADR-013 establishes the first JavaScript Doxygen-facing
+translation for canonical required `@param` records while preserving one output
+record per input record.  See
+[ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md),
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
+and [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md).
 
 ## Yields translation
 
@@ -81,11 +95,13 @@ defined and tested.  See
 ADR-005 established the value of small behavior-focused fixtures.  ADR-012 keeps
 that principle while replacing the copied Python fixture paths for maintained
 JavaScript behavior with `test/fixtures/` and `test/expected/`, plus TAP output
-from `test/run-tests.sh`.  ADR-008 remains historical support for supplementary
-scenario-level coverage.  See
+from `test/run-tests.sh`.  ADR-013 extends that suite with focused supported and
+unsupported JSDoc parameter cases, while ADR-008 remains historical support for
+supplementary scenario-level coverage.  See
 [ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md),
-[ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md), and
-[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
+[ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md),
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
+and [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md).
 
 ## Shared project infrastructure
 
@@ -118,17 +134,20 @@ coverage.  See
 ## Standards-conforming docstring recognition
 
 ADR-009 expanded the copied Python docstring recognition boundary.  ADR-012 does
-not carry those Python-specific recognition rules into JavaScript; current
-JavaScript behavior remains pass-through until later governed JSDoc translations
-are added.  See
-[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md) and
-[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
+not carry those Python-specific recognition rules into JavaScript.  ADR-013 adds a
+separate, narrowly governed JavaScript recognition boundary for canonical required
+JSDoc `@param` records while leaving unsupported JSDoc forms unchanged.  See
+[ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md),
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
+and [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md).
 
 ## Unannotated type fields
 
 ADR-010 translates copied Python `:type name:` and `:rtype:` fields into dedicated
 Doxygen paragraphs.  ADR-012 does not adopt an equivalent JavaScript type-field
-translation.  Any JSDoc type-expression behavior requires a later explicit
-decision and focused executable evidence.  See
-[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md) and
-[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md).
+translation.  ADR-013 preserves the JSDoc type expression as visible prose for its
+required-parameter translation, but it does not establish a general JavaScript
+Doxygen type-field contract.  See
+[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md),
+[ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
+and [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md).

@@ -9,10 +9,11 @@ dialect.
 
 The maintained filter is `doxygen-javascript.awk`.
 
-The current bootstrap milestone implements pass-through only.  Do not claim JSDoc
-translation, JavaScript semantic analysis, Doxygen integration, generated consumer
-artifacts, or release support until executable evidence and governing decisions
-exist.
+The current implementation translates only the accepted canonical required JSDoc
+parameter form governed by ADR-013.  Unsupported JSDoc constructs remain visible
+unchanged.  Do not claim broader JSDoc translation, JavaScript semantic analysis,
+Doxygen integration, generated consumer artifacts, or release support until
+executable evidence and governing decisions exist.
 
 ## Governing Documentation
 
@@ -56,11 +57,15 @@ Maintained AWK source follows
 
 ## Architecture and Scope
 
-ADR-012 establishes the current JavaScript bootstrap boundary.
+ADR-012 establishes the JavaScript filter and TAP regression boundary.  ADR-013
+adds the first structured translation: canonical required parameters written as
+`@param {Type} name - Description.` are converted to a line-preserving
+Doxygen-facing representation with the parameter name first and the type retained
+as visible prose.
 
-The filter currently passes newline-terminated JavaScript source records through
-without documentation transformation.  This is an executable bootstrap contract,
-not evidence of JSDoc compatibility.
+Optional/defaulted parameters, dotted properties, rest parameters, destructured
+parameter documentation, one-line JSDoc blocks, continuation records, and tags
+other than `@param` remain unsupported by ADR-013 and should pass through visibly.
 
 Future JSDoc translation should remain narrow and evidence-driven.  Prefer visible
 unsupported syntax to speculative semantic claims.  Do not add JavaScript parsing,
@@ -69,7 +74,8 @@ governance and focused tests.
 
 Copied Python implementation, tests, ADRs, and workflow history may remain during
 migration as reference material.  They are not current JavaScript capability
-claims where ADR-012 supersedes their Python-specific contracts.
+claims where ADR-012 and later JavaScript-specific decisions supersede their
+Python-specific contracts.
 
 ## Portability and Testing
 
@@ -86,10 +92,11 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves only representative pass-through behavior.  Add a focused
-fixture and expected output when adding each new supported translation behavior.
-Tests should protect externally observable behavior rather than internal helper
-structure.
+The current suite proves ordinary source pass-through, required-parameter
+translation, and visible pass-through of an unsupported optional/defaulted
+parameter.  Add a focused fixture and expected output when adding each new
+supported translation behavior.  Tests should protect externally observable
+behavior rather than internal helper structure.
 
 ## Deferred Infrastructure
 

@@ -14,21 +14,21 @@ itself, expand the implemented capabilities of `doxygen-javascript.awk`.  Filter
 support remains governed by accepted repository-specific ADRs and executable
 regression tests.
 
-ADR-012 therefore continues to govern the current bootstrap implementation:
-`doxygen-javascript.awk` performs source pass-through only until a later accepted
-JavaScript-specific translation decision supersedes that boundary.
-
-The shared JavaScript standard identifies the canonical required-parameter JSDoc
-form as:
+ADR-012 establishes the filter and TAP regression boundary.  ADR-013 adds the
+first structured translation for the canonical required-parameter JSDoc form:
 
 ```text
 @param {Type} name - Description.
 ```
 
-Support for that form, or for optional/default parameters, return values,
-exceptions, yields, typedefs, callbacks, properties, modules, inline tags, or
-complex type expressions, must be claimed only when the filter has corresponding
-accepted governance and executable evidence.
+The filter translates that form to a line-preserving Doxygen-facing record with
+the parameter name immediately after `@param` and the maintained JSDoc type
+preserved as visible prose.  Unsupported parameter forms remain unchanged.
+
+Optional/default parameters, return values, exceptions, yields, typedefs,
+callbacks, properties, modules, inline tags, complex parameter names, and other
+JSDoc forms must be claimed only when the filter has corresponding accepted
+governance and executable evidence.
 
 Maintained AWK implementation source is governed by:
 
