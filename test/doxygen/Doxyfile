@@ -1,3 +1,5 @@
+@INCLUDE               = doxygen-javascript.conf
+
 PROJECT_NAME           = "javascript-doxygen integration"
 OUTPUT_DIRECTORY       = test/doxygen/out
 CREATE_SUBDIRS         = NO
