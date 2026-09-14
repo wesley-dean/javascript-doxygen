@@ -1,3 +1,5 @@
+@INCLUDE               = doxygen-javascript.conf
+
 PROJECT_NAME           = "javascript-doxygen integration"
 OUTPUT_DIRECTORY       = test/doxygen/out
 CREATE_SUBDIRS         = NO
@@ -7,7 +9,8 @@ GENERATE_MAN           = NO
 GENERATE_RTF           = NO
 GENERATE_XML           = YES
 XML_OUTPUT             = xml
-INPUT                  = test/doxygen/fixture.js
+INPUT                  = test/doxygen/fixture.js \
+                         test/doxygen/yields.js
 RECURSIVE              = NO
 FILE_PATTERNS          = *.js
 EXTENSION_MAPPING      = js=JavaScript
