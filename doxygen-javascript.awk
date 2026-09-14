@@ -19,6 +19,7 @@
 ## @returns Nothing is returned; the rule initializes global parser state.
 BEGIN {
   in_jsdoc = 0
+  in_virtual_typedef = 0
 }
 
 ## @fn is_jsdoc_open(line)
@@ -257,7 +258,7 @@ function translate_returns(line,    prefix, work, type, description) {
 ## @par STDERR
 ## Nothing is written to STDERR.
 ##
-## @returns A translated Doxygen-facing record when a governed form matches;
+## @returns A translated Doxygen-facing record when the governed form matches;
 ## otherwise the original record unchanged.
 function translate_throws(line,    prefix, work, type, description) {
   if (line !~ /^[[:space:]]*\*[[:space:]]+@throws[[:space:]]+\{[^}[:space:]]+\}[[:space:]]+.+$/) {
@@ -376,6 +377,61 @@ function translate_typedef(line,    prefix, work, type, name, label) {
   return prefix "* @jstypedef{" label "||" name "||" type "}"
 }
 
+## @fn translate_property(line)
+## @brief Translates one canonical JSDoc property of a governed virtual typedef.
+## @details
+## Recognizes `@property {Type} name - Description.` only after a supported
+## virtual typedef has been established in the same JSDoc block.  Properties are
+## rendered as structured paragraphs on the virtual type page rather than as fake
+## JavaScript members or separately invented declarations.
+##
+## @param line JSDoc source record to translate.
+## @local prefix Leading indentation retained from the source record.
+## @local work Scratch copy used while extracting fields.
+## @local type Maintained JSDoc property type without surrounding braces.
+## @local name Maintained simple property name.
+## @local description Maintained property description.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A translated alias-backed property record when the governed form
+## matches; otherwise the original record unchanged.
+function translate_property(line,    prefix, work, type, name, description) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@property[[:space:]]+\{[^}]+\}[[:space:]]+[A-Za-z_$][A-Za-z0-9_$]*[[:space:]]+-[[:space:]]+.+$/) {
+    return line
+  }
+
+  prefix = line
+  sub(/\*.*/, "", prefix)
+
+  work = line
+  sub(/^[[:space:]]*\*[[:space:]]+@property[[:space:]]+\{/, "", work)
+
+  type = work
+  sub(/\}.*/, "", type)
+  if (type ~ /\|\|/) {
+    return line
+  }
+
+  sub(/^[^}]*\}[[:space:]]+/, "", work)
+
+  name = work
+  sub(/[[:space:]]+-.*/, "", name)
+
+  description = work
+  sub(/^[^[:space:]]+[[:space:]]+-[[:space:]]+/, "", description)
+  if (description ~ /\|\|/) {
+    return line
+  }
+
+  return prefix "* @jsproperty{" type "||" name "||" description "}"
+}
+
 ## @rule filter_source
 ## @brief Preserves JavaScript source while translating governed JSDoc records.
 ##
@@ -392,6 +448,7 @@ function translate_typedef(line,    prefix, work, type, name, label) {
     print
     if (is_jsdoc_open($0)) {
       in_jsdoc = 1
+      in_virtual_typedef = 0
     }
     next
   }
@@ -399,6 +456,7 @@ function translate_typedef(line,    prefix, work, type, name, label) {
   if (is_jsdoc_close($0)) {
     print
     in_jsdoc = 0
+    in_virtual_typedef = 0
     next
   }
 
@@ -406,5 +464,16 @@ function translate_typedef(line,    prefix, work, type, name, label) {
   line = translate_returns(line)
   line = translate_throws(line)
   line = translate_yields(line)
-  print translate_typedef(line)
+
+  translated_typedef = translate_typedef(line)
+  if (translated_typedef != line) {
+    in_virtual_typedef = 1
+  }
+  line = translated_typedef
+
+  if (in_virtual_typedef) {
+    line = translate_property(line)
+  }
+
+  print line
 }

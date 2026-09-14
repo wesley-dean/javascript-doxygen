@@ -4,8 +4,3 @@
  * @typedef {Object} User
  * @property {string} name - Display name shown to readers.
  */
-
-/**
- * @page typedefreference Typedef reference probe
- * References @ref jsdocvirtualtypeuulslelr "User".
- */

@@ -8,11 +8,11 @@ The maintained filter is `doxygen-javascript.awk`.  It currently supports the
 canonical simple-parameter forms governed by ADR-013 and ADR-014, canonical typed
 `@returns` records governed by ADR-016, canonical typed-and-described `@throws`
 records governed by ADR-017, canonical typed `@yields` records governed by ADR-019,
-native-compatible `@deprecated` and `@see` records governed by ADR-020, and
-canonical virtual `@typedef` records governed by ADR-021.  ADR-018 exercises
-governed forms through Doxygen's JavaScript parser.  Unsupported forms remain
-unchanged.  The filter does not infer JavaScript semantics or claim complete JSDoc
-coverage.
+native-compatible `@deprecated` and `@see` records governed by ADR-020, canonical
+virtual `@typedef` records governed by ADR-021, and canonical properties of those
+virtual typedefs governed by ADR-022.  ADR-018 exercises governed forms through
+Doxygen's JavaScript parser.  Unsupported forms remain unchanged.  The filter does
+not infer JavaScript semantics or claim complete JSDoc coverage.
 
 ## Current capability
 
@@ -135,15 +135,33 @@ and displays the maintained base type.  The page provides a named Doxygen `@ref`
 target without fabricating a JavaScript class, struct, interface, typedef
 declaration, or other runtime symbol.
 
+A canonical property following that supported typedef in the same JSDoc block:
+
+```text
+@property {string} name - Display name shown to readers.
+```
+
+is translated on the same physical line to:
+
+```text
+@jsproperty{string||name||Display name shown to readers.}
+```
+
+The consumer alias renders it as structured child documentation on the `User`
+virtual-type page.  The property is not promoted to a fake JavaScript member or a
+separate generated entity.  A property outside a governed virtual typedef block
+remains visibly unchanged.
+
 The maintained JavaScript source remains unchanged.  The filter preserves type and
 default text without interpreting either.  Current default-token support requires
 non-empty text containing neither whitespace nor `]`.  Typed `@throws` support
 requires a compact exception type without whitespace plus a non-empty description.
-Virtual typedef names currently require simple JavaScript identifiers.  Unsupported
-forms such as dotted property notation, singular `@return`, untyped `@returns`,
-description-only `@throws`, type-only `@throws`, description-only `@yields`,
-type-only `@yields`, dotted typedef names, and untyped typedefs continue to pass
-through unchanged.
+Virtual typedef and supported typedef-property names currently require simple
+JavaScript identifiers.  Unsupported forms such as dotted property notation,
+singular `@return`, untyped `@returns`, description-only `@throws`, type-only
+`@throws`, description-only `@yields`, type-only `@yields`, dotted typedef names,
+untyped typedefs, standalone properties, and complex property forms continue to
+pass through unchanged.
 
 All governed transformations preserve one output record for each input record.
 The TAP suite checks this invariant for every fixture.  That line correspondence is
@@ -184,7 +202,7 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves fourteen behaviors: ordinary JavaScript passes through
+The current suite proves sixteen behaviors: ordinary JavaScript passes through
 unchanged; canonical required parameters translate; optional parameters with and
 without compact documented defaults translate; unsupported dotted property
 notation remains visible unchanged; canonical typed `@returns` records translate;
@@ -193,9 +211,10 @@ singular `@return` remains visible unchanged; canonical typed-and-described
 forms remain unchanged; canonical typed `@yields` records translate; unsupported
 description-only and type-only `@yields` forms remain unchanged; native-compatible
 `@deprecated` and `@see` records pass through unchanged; canonical virtual
-`@typedef` records translate to related-page aliases; and unsupported typedef
-forms remain unchanged.  Every fixture also proves that filtering preserves
-physical line count.
+`@typedef` records translate to related-page aliases; unsupported typedef forms
+remain unchanged; canonical properties following a governed virtual typedef
+translate to page paragraphs; and standalone properties remain unchanged.  Every
+fixture also proves that filtering preserves physical line count.
 
 ## JavaScript/Doxygen integration
 
@@ -204,8 +223,9 @@ surfaces.  ADR-018 establishes `test/doxygen/` as the integration surface and us
 Doxygen's JavaScript parser rather than translating JavaScript into another source
 language.  ADR-019 extends that integration surface to the alias-backed `Yields`
 representation, ADR-020 uses the same surface to prove native-compatible tag
-semantics, and ADR-021 uses it to prove named virtual typedef pages and cross-
-reference resolution.
+semantics, ADR-021 uses it to prove named virtual typedef pages and cross-reference
+resolution, and ADR-022 proves that governed properties render on the corresponding
+virtual-type page.
 
 Run the integration suite with either supported AWK implementation:
 
@@ -217,14 +237,16 @@ make test-doxygen AWK_BIN=gawk
 The integration Doxyfile applies `doxygen-javascript.awk` through
 `FILTER_PATTERNS`, loads `doxygen-javascript.conf`, generates XML, and verifies
 semantic output structure for governed parameter, return, exception, yield,
-deprecation, see-also, and virtual typedef forms.  The yields assertions verify a
-dedicated `Yields` paragraph plus source-location evidence for the generator
-fixture.  Native-tag assertions verify that unchanged `@deprecated` and `@see`
-records are interpreted by Doxygen rather than merely surviving the filter.  The
-typedef assertions verify a named related page, retained source prose and base
-type, and a resolved Doxygen `@ref` to the generated virtual type.  CI runs this
-surface separately from the TAP suite so a textual filter regression can be
-distinguished from a downstream Doxygen integration regression.
+deprecation, see-also, virtual typedef, and typedef-property forms.  The yields
+assertions verify a dedicated `Yields` paragraph plus source-location evidence for
+the generator fixture.  Native-tag assertions verify that unchanged `@deprecated`
+and `@see` records are interpreted by Doxygen rather than merely surviving the
+filter.  The typedef assertions verify a named related page, retained source prose
+and base type, and a resolved Doxygen `@ref` to the generated virtual type.  The
+property assertions verify the `Property: name` heading, documented type, and
+maintained description inside that virtual typedef page.  CI runs this surface
+separately from the TAP suite so a textual filter regression can be distinguished
+from a downstream Doxygen integration regression.
 
 Generated integration output beneath `test/doxygen/out/` is ephemeral and ignored
 by Git.  Passing integration tests demonstrate only the explicitly exercised forms
@@ -262,8 +284,9 @@ those interfaces are supported here.
 
 The following capabilities remain deliberately deferred:
 
-- complex JSDoc parameter forms and tags beyond the explicitly accepted contracts,
-  including `@property`, `@callback`, and general `@type` handling;
+- complex JSDoc parameter and property forms beyond the explicitly accepted
+  contracts;
+- `@callback` and general `@type` handling;
 - automatic linking of arbitrary type expressions to virtual typedef pages;
 - generated consumer artifacts and checksums;
 - semantic-version release publication; and
@@ -276,7 +299,8 @@ governs project self-documentation, ADR-016 governs canonical typed return
 translation, ADR-017 governs canonical typed exception translation, ADR-018
 governs JavaScript/Doxygen integration testing, ADR-019 governs alias-backed typed
 yield translation, ADR-020 governs evidence-driven native-compatible tag
-pass-through, and ADR-021 governs related-page representation for virtual typedefs.
+pass-through, ADR-021 governs related-page representation for virtual typedefs,
+and ADR-022 governs canonical child properties of those virtual typedefs.
 
 ## Coding standards and governance
 
