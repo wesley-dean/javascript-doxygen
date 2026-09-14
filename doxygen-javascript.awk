@@ -232,6 +232,49 @@ function translate_throws(line,    prefix, work, type, description) {
   return prefix "* @throws " type " " description
 }
 
+## @fn translate_yields(line)
+## @brief Translates one canonical typed JSDoc `@yields` record.
+## @details
+## Recognizes the governed form `@yields {Type} Description.` and emits the
+## consumer-side `@jsyields` alias on the same physical source line.  The required
+## Doxygen alias expands to a dedicated `Yields` paragraph during Doxygen parsing,
+## preserving generator semantics without changing filter line correspondence.
+##
+## @param line JSDoc source record to translate.
+## @local prefix Leading indentation retained from the source record.
+## @local work Scratch copy used while extracting fields.
+## @local type Maintained JSDoc yield type without surrounding braces.
+## @local description Maintained yield description.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A translated alias-backed record when the governed form matches;
+## otherwise the original record unchanged.
+function translate_yields(line,    prefix, work, type, description) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@yields[[:space:]]+\{[^}]+\}[[:space:]]+.+$/) {
+    return line
+  }
+
+  prefix = line
+  sub(/\*.*/, "", prefix)
+
+  work = line
+  sub(/^[[:space:]]*\*[[:space:]]+@yields[[:space:]]+\{/, "", work)
+
+  type = work
+  sub(/\}.*/, "", type)
+
+  description = work
+  sub(/^[^}]*\}[[:space:]]+/, "", description)
+
+  return prefix "* @jsyields Type: " type ". " description
+}
+
 ## @rule filter_source
 ## @brief Preserves JavaScript source while translating governed JSDoc records.
 ##
@@ -260,5 +303,6 @@ function translate_throws(line,    prefix, work, type, description) {
 
   line = translate_param($0)
   line = translate_returns(line)
-  print translate_throws(line)
+  line = translate_throws(line)
+  print translate_yields(line)
 }
