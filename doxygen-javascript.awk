@@ -105,6 +105,51 @@ function virtual_type_label(name,    i, character, label) {
   return label
 }
 
+## @fn virtual_callback_label(name)
+## @brief Encodes a JavaScript callback identifier as a portable Doxygen page label.
+## @details
+## Uses the same character encoding as virtual typedef labels but a distinct
+## namespace prefix so a typedef and callback with the same maintained name cannot
+## collide in generated Doxygen documentation.
+##
+## @param name Simple JavaScript callback identifier to encode.
+## @local i Current one-based character position.
+## @local character Current identifier character.
+## @local label Encoded Doxygen callback page label.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A lowercase alphanumeric callback page label for a supported
+## identifier; otherwise an empty string.
+function virtual_callback_label(name,    i, character, label) {
+  label = "jsdocvirtualcallback"
+
+  for (i = 1; i <= length(name); i++) {
+    character = substr(name, i, 1)
+
+    if (character ~ /^[A-Z]$/) {
+      label = label "u" tolower(character)
+    } else if (character ~ /^[a-z]$/) {
+      label = label "l" character
+    } else if (character ~ /^[0-9]$/) {
+      label = label "d" character
+    } else if (character == "_") {
+      label = label "n0"
+    } else if (character == "$") {
+      label = label "s0"
+    } else {
+      return ""
+    }
+  }
+
+  return label
+}
+
 ## @fn translate_param(line)
 ## @brief Translates one governed JSDoc `@param` record.
 ## @details
@@ -377,6 +422,50 @@ function translate_typedef(line,    prefix, work, type, name, label) {
   return prefix "* @jstypedef{" label "||" name "||" type "}"
 }
 
+## @fn translate_callback(line)
+## @brief Translates one named JSDoc callback contract to a virtual page.
+## @details
+## Recognizes `@callback Name` when Name is a simple JavaScript identifier.  The
+## generated `@jscallback` command creates a related page so the callback remains a
+## named reusable documentation type without inventing a runtime JavaScript
+## function declaration.  Governed parameter and return records in the same block
+## retain their existing translations and are interpreted as callback-page
+## documentation by Doxygen.
+##
+## @param line JSDoc source record to translate.
+## @local prefix Leading indentation retained from the source record.
+## @local name Maintained callback name.
+## @local label Deterministic generated Doxygen callback page label.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A translated alias-backed callback record when the governed form
+## matches; otherwise the original record unchanged.
+function translate_callback(line,    prefix, name, label) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@callback[[:space:]]+[A-Za-z_$][A-Za-z0-9_$]*[[:space:]]*$/) {
+    return line
+  }
+
+  prefix = line
+  sub(/\*.*/, "", prefix)
+
+  name = line
+  sub(/^[[:space:]]*\*[[:space:]]+@callback[[:space:]]+/, "", name)
+  sub(/[[:space:]]*$/, "", name)
+
+  label = virtual_callback_label(name)
+  if (label == "") {
+    return line
+  }
+
+  return prefix "* @jscallback{" label "||" name "}"
+}
+
 ## @fn translate_property(line)
 ## @brief Translates one canonical JSDoc property of a governed virtual typedef.
 ## @details
@@ -464,6 +553,7 @@ function translate_property(line,    prefix, work, type, name, description) {
   line = translate_returns(line)
   line = translate_throws(line)
   line = translate_yields(line)
+  line = translate_callback(line)
 
   translated_typedef = translate_typedef(line)
   if (translated_typedef != line) {

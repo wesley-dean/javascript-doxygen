@@ -43,6 +43,7 @@ test-doxygen:
 	@grep -Fxq 'ALIASES += jsyields="@par Yields^^"' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jsyields alias' >&2; exit 1; }
 	@grep -Fxq 'ALIASES += jstypedef{3||}="@page \1 \2^^@par JSDoc virtual type^^Base type: \3."' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jstypedef alias' >&2; exit 1; }
 	@grep -Fxq 'ALIASES += jsproperty{3||}="@par Property: \2^^Type: \1.^^\3"' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jsproperty alias' >&2; exit 1; }
+	@grep -Fxq 'ALIASES += jscallback{2||}="@page \1 \2^^@par JSDoc callback"' "$(DOXYGEN_CONSUMER_CONFIG)" || { printf '%s\n' 'Missing governed jscallback alias' >&2; exit 1; }
 	@command -v doxygen >/dev/null 2>&1 || { printf '%s\n' 'doxygen is required for make test-doxygen' >&2; exit 1; }
 	$(MAKE) --no-print-directory integration-clean
 	AWK_BIN="$(AWK_BIN)" DOXYGEN_JAVASCRIPT_FILTER="$(abspath $(DOXYGEN_JAVASCRIPT_FILTER))" doxygen "$(INTEGRATION_CONFIG)"
@@ -77,6 +78,15 @@ test-doxygen:
 	grep -q '<title>Property: name</title>' "$(INTEGRATION_OUT)/xml/jsdocvirtualtypeuulslelr.xml"
 	grep -q 'Type: string.' "$(INTEGRATION_OUT)/xml/jsdocvirtualtypeuulslelr.xml"
 	grep -q 'Display name shown to readers.' "$(INTEGRATION_OUT)/xml/jsdocvirtualtypeuulslelr.xml"
+	test -f "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q '<title>Handler</title>' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q 'JSDoc callback' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q '<parameterlist kind="param">' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q '<parametername>value</parametername>' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q 'Normalized value supplied to the callback.' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q '<simplesect kind="return">' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -q 'True when the value is accepted.' "$(INTEGRATION_OUT)/xml/jsdocvirtualcallbackuhlalnldlllelr.xml"
+	grep -R -q '<ref refid="jsdocvirtualcallbackuhlalnldlllelr"' "$(INTEGRATION_OUT)/xml"
 
 FORCE:
 

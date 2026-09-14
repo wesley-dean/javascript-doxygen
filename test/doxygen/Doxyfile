@@ -12,7 +12,8 @@ XML_OUTPUT             = xml
 INPUT                  = test/doxygen/fixture.js \
                          test/doxygen/yields.js \
                          test/doxygen/native-tags.js \
-                         test/doxygen/typedef.js
+                         test/doxygen/typedef.js \
+                         test/doxygen/callback.js
 RECURSIVE              = NO
 FILE_PATTERNS          = *.js
 EXTENSION_MAPPING      = js=JavaScript
