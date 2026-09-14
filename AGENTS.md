@@ -39,10 +39,16 @@ upstream release and archive digest for the managed snapshot.
 
 ## Documentation Standards
 
-No JavaScript documentation standard has been adopted by this repository yet.
-`doc/documentation-standard.md` records that status.  Until a JavaScript standard
-is adopted, do not infer a normative JSDoc subset from implementation ideas or
-copied Python documentation.
+Maintained JavaScript documentation follows
+`doc/standards/javascript/documentation-standard.md`, whose canonical upstream is
+`wesley-dean/coding_standards/standards/javascript/documentation-standard.md`.
+JSDoc is therefore the maintained source documentation language for JavaScript in
+this repository.
+
+The shared standard defines valid maintained-source forms.  Filter support is a
+separate, narrower contract governed by this repository's accepted ADRs and
+regression tests.  Do not infer that `doxygen-javascript.awk` translates a JSDoc
+construct merely because the shared standard permits that construct.
 
 Maintained AWK source follows
 `doc/standards/awk/documentation-standard.md`, whose canonical upstream is
