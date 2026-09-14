@@ -21,13 +21,14 @@ and `test/run-tests.sh` emits TAP version 13; `make test` runs the same suite wi
 portable AWK implementations.  JavaScript/Doxygen integration and release
 workflows were initially deferred rather than satisfied with no-op compatibility
 targets; ADR-015 later restored independent project self-documentation, ADR-018
-later established JavaScript/Doxygen integration testing, and ADR-025 later
-established local JavaScript distribution artifacts while leaving release
-publication deferred.  See
+later established JavaScript/Doxygen integration testing, ADR-025 later
+established local JavaScript distribution artifacts, and ADR-026 later establishes
+JavaScript-specific release publication.  See
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-015](adr/ADR-015-restore-project-self-documentation.md),
-[ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md), and
-[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+[ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md), and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Required JSDoc parameter translation
 
@@ -173,9 +174,23 @@ verified dependency state.  The three generated filters run through the same TAP
 suite and Doxygen integration surface as maintained source under both supported AWK
 implementations.  The downstream runtime model remains one Bashdeps-managed AWK
 filter in the consumer's `vendor/` directory, while required aliases live in the
-consumer-owned Doxyfile; semantic-version release publication remains a separate
-future decision tracked by issue #19.  See
-[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+consumer-owned Doxyfile.  ADR-026 publishes these exact generated outputs without
+changing that one-file runtime contract.  See
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md) and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
+
+## JavaScript release publication
+
+ADR-026 establishes semantic-version publication of the exact ADR-025 build
+outputs.  The ordinary `javascript-doxygen.awk` asset is the canonical normal
+Bashdeps consumer artifact; `.dev` and `.min` are alternate published variants,
+and all three adjacent SHA-256 files are published as verification metadata.  The
+workflow calculates a version without creating a tag, validates maintained source
+and all generated variants under `mawk` and GNU awk plus Doxygen, then creates the
+release tag and uploads all six exact Make-produced files.  A dependent
+post-publication canary downloads all six public assets, verifies all hashes, and
+re-exercises every published filter under both supported AWKs and Doxygen.  See
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Capability scope and epistemic honesty
 
@@ -189,12 +204,12 @@ adds evidence-backed native-compatible support for `@deprecated` and `@see`,
 ADR-021 adds named virtual typedef pages, ADR-022 adds canonical properties of those
 virtual typedefs, ADR-023 adds named virtual callback pages with governed signature
 documentation, ADR-024 adds consumer-alias rendering for byte-preserved canonical
-symbol `@type` annotations, and ADR-025 adds locally generated and verified
-JavaScript distribution artifacts.  ADR-015 establishes self-documentation as a
+symbol `@type` annotations, ADR-025 adds locally generated and verified JavaScript
+distribution artifacts, and ADR-026 adds semantic-version release publication plus
+post-publication canary evidence.  ADR-015 establishes self-documentation as a
 separate supported capability, while ADR-018 adds downstream Doxygen evidence for
-governed forms.  Broader JSDoc support, automatic type-expression linking,
-semantic-version release publication, and release canaries remain deferred until
-separately governed and proven.  See
+governed forms.  Broader JSDoc support and automatic type-expression linking remain
+deferred until separately governed and proven.  See
 [ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
@@ -208,8 +223,9 @@ separately governed and proven.  See
 [ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md),
 [ADR-022](adr/ADR-022-render-jsdoc-typedef-properties-on-virtual-type-pages.md),
 [ADR-023](adr/ADR-023-represent-jsdoc-callbacks-as-virtual-pages.md),
-[ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md), and
-[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+[ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md),
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md), and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Supported Python documentation scope
 
@@ -288,16 +304,18 @@ physical line correspondence simultaneously.  Description-only and type-only
 ADR-004 established the copied Python source/dist artifact boundary, and ADR-007
 later governed release publication of those Python artifacts.  ADR-012 deferred a
 JavaScript consumer-artifact and release contract until corresponding behavior was
-defined and tested.  ADR-025 now establishes the JavaScript local build artifacts,
-checksums, pinned minifier lineage, and one-file downstream runtime model, but it
-deliberately does not establish semantic-version release publication.  A future
-release decision must publish exact Make-produced bytes without turning
-`doxygen-javascript.conf` into a second runtime dependency; issue #19 tracks that
-work.  See
+defined and tested.  ADR-025 establishes the JavaScript local build artifacts,
+checksums, pinned minifier lineage, and one-file downstream runtime model.  ADR-026
+now establishes semantic-version publication: `javascript-doxygen.awk` is the
+canonical normal Bashdeps consumer asset, with development and minified variants
+published as alternatives and all three hashes published alongside them.  The
+checked-in `doxygen-javascript.conf` remains repository reference/test data rather
+than a release dependency.  See
 [ADR-004](adr/ADR-004-build-and-release-versioned-filter.md),
 [ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
-and [ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md), and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Behavior-focused fixtures
 
@@ -322,7 +340,8 @@ ADR-024 adds byte-preserved canonical `@type` coverage plus a dedicated one-symb
 Doxygen fixture proving the configured `Type` paragraph and maintained expression
 attach to the documented symbol.  ADR-025 reuses those same behavior fixtures and
 integration assertions against all three generated AWK artifacts, while also
-checking artifact shape and SHA-256 files.  See
+checking artifact shape and SHA-256 files.  ADR-026 reuses the same suites against
+the exact public release bytes in its post-publication canary.  See
 [ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
@@ -335,8 +354,9 @@ checking artifact shape and SHA-256 files.  See
 [ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md),
 [ADR-022](adr/ADR-022-render-jsdoc-typedef-properties-on-virtual-type-pages.md),
 [ADR-023](adr/ADR-023-represent-jsdoc-callbacks-as-virtual-pages.md),
-[ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md), and
-[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+[ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md),
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md), and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Shared project infrastructure
 
@@ -357,9 +377,11 @@ members.  ADR-023 applies the same honest virtual-entity model to named callback
 and reuses already-governed signature translations rather than inventing parallel
 callback syntax.  ADR-024 narrows the filter's role further by using a simple
 consumer alias for canonical `@type` instead of adding an unnecessary AWK parser or
-rewrite.  ADR-025 adapts the three-artifact AWK Minifier build pattern, uses
-Bashdeps for pinned build-tool preparation, and adds generated artifact parity
-without reactivating copied release automation.  See
+rewrite.  ADR-025 adapts the three-artifact AWK Minifier build pattern and uses
+Bashdeps for pinned build-tool preparation.  ADR-026 adapts sibling semantic
+versioning and public release publication while deliberately delaying tag creation
+until after JavaScript-specific build, checksum, semantic, and Doxygen validation.
+See
 [ADR-006](adr/ADR-006-adopt-sibling-build-test-and-documentation-infrastructure.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-015](adr/ADR-015-restore-project-self-documentation.md),
@@ -369,22 +391,26 @@ without reactivating copied release automation.  See
 [ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md),
 [ADR-022](adr/ADR-022-render-jsdoc-typedef-properties-on-virtual-type-pages.md),
 [ADR-023](adr/ADR-023-represent-jsdoc-callbacks-as-virtual-pages.md),
-[ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md), and
-[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+[ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md),
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md), and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Release publication and downstream pinning
 
-ADR-007 governs publication and downstream pinning for the copied Python release
-artifact.  ADR-012 defers any equivalent JavaScript release interface, and ADR-025
-deliberately stops at generated local artifacts, checksums, and a one-file runtime
-consumer model.  No `javascript-doxygen` artifact should be treated as a published
-stable release until a later accepted JavaScript release decision establishes that
-contract.  Issue #19 tracks publication of the exact `make all` outputs as release
-assets while preserving one AWK runtime dependency for downstream Bashdeps
-consumers.  See
+ADR-026 establishes the JavaScript release interface after ADR-012's deferral and
+ADR-025's local build boundary.  Pushes to `main` calculate a semantic version,
+validate maintained source and all three generated artifacts, and only then create
+the `v<version>` release tag and publish all three AWK variants with their SHA-256
+files.  The ordinary `javascript-doxygen.awk` file is the canonical normal Bashdeps
+consumer artifact; consumers pin a specific public release URL and digest while
+retaining the one-file runtime dependency model.  A dependent post-publication
+canary downloads all six public assets, verifies all hashes, and runs the existing
+TAP and Doxygen evidence against every published filter under both supported AWKs.
+See
 [ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
-and [ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+[ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md), and
+[ADR-026](adr/ADR-026-publish-javascript-release-artifacts.md).
 
 ## Scenario-level program regressions
 

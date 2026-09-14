@@ -18,11 +18,13 @@ ADR-022, and canonical named `@callback` contracts governed by ADR-023.  ADR-018
 exercises governed forms through Doxygen's JavaScript parser, ADR-020 establishes
 native-compatible pass-through for proven `@deprecated` and `@see` forms, ADR-024
 establishes consumer-alias rendering for byte-preserved canonical `@type`
-annotations, and ADR-025 establishes generated development, ordinary, and minified
-AWK build artifacts with adjacent SHA-256 files.  Unsupported JSDoc constructs
-remain visible unchanged.  Do not claim broader JSDoc translation, native
-compatibility, consumer-alias support, JavaScript semantic analysis, or release
-publication until executable evidence and governing decisions exist.
+annotations, ADR-025 establishes generated development, ordinary, and minified AWK
+build artifacts with adjacent SHA-256 files, and ADR-026 governs semantic-version
+publication of those exact artifacts plus post-publication canary evidence.
+Unsupported JSDoc constructs remain visible unchanged.  Do not claim broader JSDoc
+translation, native compatibility, consumer-alias support, JavaScript semantic
+analysis, or release behavior beyond the accepted governance and executable
+evidence.
 
 ## Governing Documentation
 
@@ -89,8 +91,9 @@ reuses already-governed parameter and return translations for callback signature
 ADR-024 supports canonical `@type {Type}` annotations by leaving the maintained
 JSDoc record unchanged and defining its Doxygen presentation entirely in consumer
 configuration.  ADR-025 establishes the JavaScript-specific generated artifact,
-checksum, build-dependency, and source/dist parity contract while leaving release
-publication separate.
+checksum, build-dependency, and source/dist parity contract.  ADR-026 publishes
+those generated artifacts as semantic-versioned GitHub release assets and adds a
+post-publication exact-public-bytes canary.
 
 Supported parameter, virtual typedef, governed typedef-property, and callback names
 remain simple JavaScript identifiers.  The filter keeps type expressions and
@@ -271,8 +274,33 @@ Generated `dist/` content is untracked.  Every generated AWK artifact must prese
 the maintained filter's tested semantics and must have a valid adjacent SHA-256
 file in ordinary `sha256sum`-compatible format.
 
-Release publication is not established by ADR-025.  Issue #19 tracks the separate
-JavaScript-specific release-publication mechanism.
+## Release Publication
+
+ADR-026 governs the semantic-version release interface.  The versioning workflow
+runs on pushes to `main` and may be invoked manually.  It SHALL calculate the
+prospective version without creating a tag, validate maintained source, run
+`make all VERSION=<version> AWK_BIN=mawk`, and exercise the exact generated
+artifacts under both `mawk` and GNU awk plus Doxygen before creating a release.
+
+The release SHALL publish exactly the three ADR-025 AWK artifacts and their three
+adjacent SHA-256 files.  The ordinary `javascript-doxygen.awk` file is the canonical
+normal Bashdeps consumer artifact.  Development and minified files are alternate
+published representations and do not add runtime dependencies.
+
+The release tag SHALL be created only after validation succeeds and SHALL identify
+the exact validated commit.  Workflow YAML SHALL NOT duplicate Make-owned build,
+minification, checksum, TAP, or Doxygen logic.
+
+A dependent post-publication canary SHALL download all six public release assets,
+verify the three hashes, and run TAP plus Doxygen integration against every
+downloaded AWK artifact under both supported AWK implementations.  The canary is
+verification only: it SHALL NOT advance stable dependency pins or mutate unrelated
+repository state.
+
+`doxygen-javascript.conf` remains repository reference/integration data and SHALL
+NOT become a release runtime asset.  Normal consumers pin a specific semantic
+version of `javascript-doxygen.awk`, its public release URL, and its expected digest
+through Bashdeps.
 
 ## Portability and Testing
 
@@ -355,6 +383,10 @@ against development, ordinary, and minified artifacts.  `test-dist-doxygen`
 exercises each generated artifact through the same Doxygen integration contract.
 CI runs both artifact surfaces under `mawk` and GNU awk after `make all`.
 
+ADR-026 extends the same evidence to release publication.  Pre-publication gates
+exercise the exact generated release candidates; the post-publication canary then
+repeats TAP and Doxygen integration against the exact public release bytes.
+
 ## Project Self-Documentation
 
 ADR-015 restores project self-documentation independently of JavaScript/Doxygen
@@ -380,9 +412,9 @@ other.
 
 ## Deferred Infrastructure
 
-Semantic-version release publication and release-artifact canaries remain deferred.
-Issue #19 tracks the dedicated JavaScript release-publication increment.  Do not
-reactivate copied Python release automation or add no-op compatibility targets.
+Do not reactivate copied Python-specific release paths or add no-op compatibility
+targets.  Future release changes SHALL preserve ADR-025 and ADR-026 unless a new or
+superseding accepted decision explicitly changes the public contract.
 
 ## Engineering Approach
 

@@ -12,10 +12,11 @@ native-compatible `@deprecated` and `@see` records governed by ADR-020, canonica
 virtual `@typedef` records governed by ADR-021, canonical properties of those
 virtual typedefs governed by ADR-022, canonical named `@callback` contracts
 governed by ADR-023, and canonical `@type` annotations governed by ADR-024.
-ADR-018 exercises governed forms through Doxygen's JavaScript parser, and ADR-025
+ADR-018 exercises governed forms through Doxygen's JavaScript parser, ADR-025
 establishes generated development, ordinary, and minified build artifacts with
-adjacent SHA-256 files.  Unsupported forms remain unchanged.  The filter does not
-infer JavaScript semantics or claim complete JSDoc coverage.
+adjacent SHA-256 files, and ADR-026 publishes those exact artifacts through the
+semantic-version release workflow.  Unsupported forms remain unchanged.  The
+filter does not infer JavaScript semantics or claim complete JSDoc coverage.
 
 ## Current capability
 
@@ -294,8 +295,32 @@ make test-dist-doxygen AWK_BIN=mawk
 make test-dist-doxygen AWK_BIN=gawk
 ```
 
-This build contract does not itself publish releases.  JavaScript-specific release
-publication is tracked separately in issue #19.
+## Releases
+
+ADR-026 publishes the exact ADR-025 outputs through the semantic-version workflow.
+The ordinary release asset:
+
+```text
+javascript-doxygen.awk
+```
+
+is the canonical normal `bashdeps` consumer artifact.  Releases also publish the
+`.dev` and `.min` variants for inspection or deliberate alternate use, together
+with one `.sha256` file for each AWK artifact.  Publishing those variants does not
+change the normal one-file runtime dependency model.
+
+The release workflow calculates the prospective semantic version without creating
+a tag, validates maintained source plus all three generated filters under both
+`mawk` and GNU awk and through Doxygen, then creates the `v<version>` release at the
+exact validated commit.  All six generated files are uploaded as release assets.
+A dependent post-publication canary downloads the public release assets, verifies
+all three hashes, and repeats TAP and Doxygen integration against every downloaded
+filter under both supported AWK implementations.
+
+A normal consuming repository should pin a specific release of
+`javascript-doxygen.awk` in its `bashdeps` manifest using the public release-asset
+URL and the digest from `javascript-doxygen.awk.sha256`.  Consumers should not pin
+`main`, `latest`, or another moving reference.
 
 ## Regression tests
 
@@ -354,7 +379,8 @@ resolution, ADR-022 proves that governed properties render on the corresponding
 virtual-type page, ADR-023 proves named callback pages with parameter and return
 sections, and ADR-024 proves consumer-alias rendering for byte-preserved `@type`
 annotations.  ADR-025 additionally requires the generated artifacts to preserve
-that tested behavior.
+that tested behavior, and ADR-026 reuses the same evidence against exact published
+release bytes.
 
 Run the integration suite with either supported AWK implementation:
 
@@ -420,11 +446,9 @@ The following capabilities remain deliberately deferred:
 
 - complex JSDoc parameter and property forms beyond the explicitly accepted
   contracts;
-- scoped or otherwise complex callback namepaths;
+- scoped or otherwise complex callback namepaths; and
 - automatic linking of arbitrary type expressions to virtual typedef or callback
-  pages;
-- semantic-version release publication; and
-- release-artifact canaries.
+  pages.
 
 Those capabilities should be enabled only after their JavaScript-specific
 contracts are governed and tested.  ADR-012 records the bootstrap boundary,
@@ -436,9 +460,9 @@ yield translation, ADR-020 governs evidence-driven native-compatible tag
 pass-through, ADR-021 governs related-page representation for virtual typedefs,
 ADR-022 governs canonical child properties of those virtual typedefs, ADR-023
 governs named virtual callback pages, ADR-024 governs byte-preserved canonical
-`@type` annotations rendered through consumer configuration, and ADR-025 governs
-the local generated distribution build surface.  Issue #19 tracks the separate
-release-publication increment.
+`@type` annotations rendered through consumer configuration, ADR-025 governs the
+local generated distribution build surface, and ADR-026 governs semantic-version
+release publication and the exact-public-bytes canary.
 
 ## Coding standards and governance
 
