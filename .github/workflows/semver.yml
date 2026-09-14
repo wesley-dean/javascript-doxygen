@@ -1,17 +1,198 @@
 ---
 # yamllint disable-line rule:truthy
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
-name: Versioning (deferred)
+name: Versioning
 permissions:
   contents: read
 
+concurrency:
+  group: "${{ github.ref }}-${{ github.workflow }}"
+  cancel-in-progress: true
+
 jobs:
-  deferred:
+  versioning:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.release-version.outputs.version }}
     steps:
-      - name: Report deferred release automation
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install release validation tools
         run: |
-          printf '%s\n' \
-            'Release automation is deferred until a JavaScript consumer artifact exists.'
+          sudo apt-get update
+          sudo apt-get install --yes doxygen gawk mawk
+
+      - name: Detect existing release tag at HEAD
+        id: existing-version
+        shell: bash
+        run: |
+          tag="$(
+            git tag --points-at HEAD \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V \
+              | tail -n 1 \
+              || true
+          )"
+          if [ -n "${tag}" ]; then
+            printf 'version=%s\n' "${tag#v}" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Calculate version
+        id: calculate-version
+        if: steps.existing-version.outputs.version == ''
+        uses: bitshifted/git-auto-semver@c4e8f005e839f822325356f141939cf6c76b5701 # v1
+        with:
+          create_tag: false
+          initial_version: 0.0.1
+          tag_prefix: v
+
+      - name: Select release version
+        id: release-version
+        shell: bash
+        env:
+          EXISTING_VERSION: ${{ steps.existing-version.outputs.version }}
+          CALCULATED_VERSION: ${{ steps.calculate-version.outputs.version-string }}
+        run: |
+          if [ -n "${EXISTING_VERSION}" ]; then
+            version="${EXISTING_VERSION}"
+          else
+            version="${CALCULATED_VERSION}"
+          fi
+          test -n "${version}"
+          printf 'version=%s\n' "${version}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate maintained source
+        run: |
+          make check
+          make test-source AWK_BIN=mawk
+          make test-source AWK_BIN=gawk
+
+      - name: Build exact release candidates
+        run: |
+          make all \
+            VERSION="${{ steps.release-version.outputs.version }}" \
+            AWK_BIN=mawk
+
+      - name: Validate generated release candidates
+        run: |
+          make test-dist \
+            VERSION="${{ steps.release-version.outputs.version }}" \
+            AWK_BIN=mawk
+          make test-dist \
+            VERSION="${{ steps.release-version.outputs.version }}" \
+            AWK_BIN=gawk
+          make test-dist-doxygen \
+            VERSION="${{ steps.release-version.outputs.version }}" \
+            AWK_BIN=mawk
+          make test-dist-doxygen \
+            VERSION="${{ steps.release-version.outputs.version }}" \
+            AWK_BIN=gawk
+
+      - name: Create release and publish exact build artifacts
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          name: "v${{ steps.release-version.outputs.version }}"
+          tag_name: "v${{ steps.release-version.outputs.version }}"
+          target_commitish: "${{ github.sha }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          files: |
+            dist/javascript-doxygen.dev.awk
+            dist/javascript-doxygen.dev.awk.sha256
+            dist/javascript-doxygen.awk
+            dist/javascript-doxygen.awk.sha256
+            dist/javascript-doxygen.min.awk
+            dist/javascript-doxygen.min.awk.sha256
+
+  released-artifact-canary:
+    name: Released-artifact canary
+    needs: versioning
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout released revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: "v${{ needs.versioning.outputs.version }}"
+
+      - name: Install release canary tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes curl doxygen gawk mawk
+
+      - name: Download exact public release assets
+        env:
+          RELEASE_TAG: "v${{ needs.versioning.outputs.version }}"
+          REPOSITORY: "${{ github.repository }}"
+        run: |
+          mkdir -p .release-canary
+          base="https://github.com/${REPOSITORY}/releases/download/${RELEASE_TAG}"
+          for asset in \
+            javascript-doxygen.dev.awk \
+            javascript-doxygen.dev.awk.sha256 \
+            javascript-doxygen.awk \
+            javascript-doxygen.awk.sha256 \
+            javascript-doxygen.min.awk \
+            javascript-doxygen.min.awk.sha256
+          do
+            curl --fail --location --silent --show-error \
+              --retry 8 --retry-all-errors --retry-delay 2 \
+              "${base}/${asset}" \
+              --output ".release-canary/${asset}"
+          done
+
+      - name: Verify published SHA-256 files
+        run: |
+          cd .release-canary
+          sha256sum -c javascript-doxygen.dev.awk.sha256
+          sha256sum -c javascript-doxygen.awk.sha256
+          sha256sum -c javascript-doxygen.min.awk.sha256
+
+      - name: Validate published semantic parity
+        run: |
+          root="$(pwd)"
+          for filter in \
+            javascript-doxygen.dev.awk \
+            javascript-doxygen.awk \
+            javascript-doxygen.min.awk
+          do
+            for awk_bin in mawk gawk
+            do
+              DOXYGEN_JAVASCRIPT_FILTER="${root}/.release-canary/${filter}" \
+                AWK_BIN="${awk_bin}" \
+                bash ./test/run-tests.sh
+            done
+          done
+
+      - name: Validate published Doxygen integration
+        run: |
+          root="$(pwd)"
+          for filter in \
+            javascript-doxygen.dev.awk \
+            javascript-doxygen.awk \
+            javascript-doxygen.min.awk
+          do
+            for awk_bin in mawk gawk
+            do
+              make test-doxygen \
+                AWK_BIN="${awk_bin}" \
+                DOXYGEN_JAVASCRIPT_FILTER="${root}/.release-canary/${filter}"
+            done
+          done
