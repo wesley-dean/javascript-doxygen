@@ -23,3 +23,15 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ${{ matrix.awk }}
       - name: Run TAP regression suite
         run: make test AWK_BIN=${{ matrix.awk }}
+
+  doxygen:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        awk: [mawk, gawk]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install integration tools
+        run: sudo apt-get update && sudo apt-get install -y doxygen ${{ matrix.awk }}
+      - name: Run Doxygen integration suite
+        run: make test-doxygen AWK_BIN=${{ matrix.awk }}

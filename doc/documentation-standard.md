@@ -79,6 +79,42 @@ callbacks, properties, modules, inline tags, and other JSDoc forms must be claim
 only when the filter has corresponding accepted governance and executable
 evidence.
 
+## JavaScript/Doxygen integration
+
+ADR-018 establishes executable downstream evidence for the currently governed
+translation forms.  The integration configuration beneath `test/doxygen/` keeps
+JavaScript as the parsed source language by using Doxygen's JavaScript parser and
+applies `doxygen-javascript.awk` only as an input filter.
+
+The integration suite generates Doxygen XML and checks semantic structure rather
+than relying only on filtered source text.  The initial contract verifies named
+parameter documentation, visible optional/default prose, return documentation in a
+Doxygen return section, and exception documentation in a Doxygen exception
+parameter list.
+
+Use:
+
+```sh
+make test-doxygen AWK_BIN=mawk
+make test-doxygen AWK_BIN=gawk
+```
+
+These tests complement the TAP regression suite; they do not replace it.  TAP
+fixtures prove the filter's textual transformation boundary, while the Doxygen
+integration surface proves that the downstream documentation engine interprets
+selected governed output as intended.
+
+Current governed translations preserve one physical output record for every input
+record.  That line correspondence is part of the integration boundary because
+Doxygen associates filtered input with source locations and source-browser
+anchors.  A future representation that adds or removes physical lines requires a
+new decision and integration evidence; it must not be inherited mechanically from
+a sibling language project.
+
+Passing integration tests establish only the explicit forms and Doxygen
+configuration exercised by the suite.  They do not establish arbitrary JavaScript
+syntax support or complete JSDoc translation.
+
 ## Repository self-documentation
 
 The repository's own reference documentation is a separate concern from
@@ -93,8 +129,8 @@ pinned documentation-only dependencies, `make deps-docs-check` verifies them, an
 The generated ADR landing page and reference output are not maintained source.
 
 Successful self-documentation does not expand the supported JSDoc translation
-surface and does not prove that JavaScript source has been exercised through
-Doxygen with `doxygen-javascript.awk`.
+surface and does not substitute for the JavaScript/Doxygen integration evidence
+governed by ADR-018.
 
 Maintained AWK implementation source is governed by:
 

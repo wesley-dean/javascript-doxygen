@@ -7,8 +7,9 @@ with JSDoc-style source documentation translated only where Doxygen needs help.
 The maintained filter is `doxygen-javascript.awk`.  It currently supports the
 canonical simple-parameter forms governed by ADR-013 and ADR-014, canonical typed
 `@returns` records governed by ADR-016, and canonical typed-and-described `@throws`
-records governed by ADR-017.  Unsupported forms remain unchanged.  The filter does
-not infer JavaScript semantics or claim a complete JavaScript/Doxygen integration.
+records governed by ADR-017.  ADR-018 exercises those governed forms through
+Doxygen's JavaScript parser.  Unsupported forms remain unchanged.  The filter does
+not infer JavaScript semantics or claim complete JSDoc coverage.
 
 ## Current capability
 
@@ -84,6 +85,10 @@ Unsupported forms such as dotted property notation, singular `@return`, untyped
 `@returns`, description-only `@throws`, and type-only `@throws` continue to pass
 through unchanged.
 
+Supported translations preserve one output record for each input record.  That
+line correspondence is part of the current Doxygen integration boundary because
+Doxygen associates filtered input with source locations and source-browser anchors.
+
 Run the filter with:
 
 ```sh
@@ -127,6 +132,31 @@ singular `@return` remains visible unchanged; canonical typed-and-described
 `@throws` forms remain unchanged.  Future documentation translations should grow
 the suite one focused behavior at a time.
 
+## JavaScript/Doxygen integration
+
+Filter-level golden output and downstream Doxygen interpretation are separate test
+surfaces.  ADR-018 establishes `test/doxygen/` as the integration surface and uses
+Doxygen's JavaScript parser rather than translating JavaScript into another source
+language.
+
+Run the integration suite with either supported AWK implementation:
+
+```sh
+make test-doxygen AWK_BIN=mawk
+make test-doxygen AWK_BIN=gawk
+```
+
+The integration Doxyfile applies `doxygen-javascript.awk` through
+`FILTER_PATTERNS`, generates XML, and verifies semantic output structure for the
+currently governed parameter, return, and exception forms.  CI runs this surface
+separately from the TAP suite so a textual filter regression can be distinguished
+from a downstream Doxygen integration regression.
+
+Generated integration output beneath `test/doxygen/out/` is ephemeral and ignored
+by Git.  Passing integration tests demonstrate only the explicitly exercised
+forms and configuration; they are not evidence of arbitrary JavaScript or JSDoc
+support.
+
 ## Project reference documentation
 
 Project self-documentation is separate from JavaScript/Doxygen integration.  The
@@ -157,12 +187,10 @@ ADRs, tests, and workflow history remain while the project is migrated.  Their
 presence does not mean that `javascript-doxygen` implements Python behavior or
 that those interfaces are supported here.
 
-The following JavaScript-specific capabilities remain deliberately deferred:
+The following capabilities remain deliberately deferred:
 
 - complex JSDoc parameter forms and tags beyond the accepted parameter, typed
   return, and typed exception contracts;
-- exercising JavaScript source through Doxygen with `doxygen-javascript.awk`;
-- JavaScript/Doxygen integration assertions;
 - generated consumer artifacts and checksums;
 - semantic-version release publication; and
 - release-artifact canaries.
@@ -170,9 +198,9 @@ The following JavaScript-specific capabilities remain deliberately deferred:
 Those capabilities should be enabled only after their JavaScript-specific
 contracts are governed and tested.  ADR-012 records the bootstrap boundary,
 ADR-013 governs required parameters, ADR-014 governs optional parameters, ADR-015
-distinguishes supported project self-documentation from deferred JavaScript/Doxygen
-integration, ADR-016 governs canonical typed return translation, and ADR-017
-governs canonical typed exception translation.
+governs project self-documentation, ADR-016 governs canonical typed return
+translation, ADR-017 governs canonical typed exception translation, and ADR-018
+governs JavaScript/Doxygen integration testing.
 
 ## Coding standards and governance
 
