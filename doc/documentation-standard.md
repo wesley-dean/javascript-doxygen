@@ -36,11 +36,29 @@ supported documented default is preserved textually without evaluation or
 normalization.  Current default-token support requires non-empty text containing
 neither whitespace nor `]`.
 
+ADR-016 adds the canonical typed return form:
+
+```text
+@returns {Type} Description.
+```
+
+Doxygen already recognizes `@returns`, so the filter preserves that command and
+moves the maintained JSDoc type expression into visible prose:
+
+```text
+@returns Description. Type: Type.
+```
+
+The filter preserves the type text without validation, normalization, inference,
+or interpretation.  Singular `@return`, untyped `@returns`, typed returns without
+descriptions, continuation lines, and `@yields` remain outside the accepted return
+translation boundary.
+
 Unsupported parameter forms remain unchanged.  Dotted property names, optional
-dotted properties, rest parameters, destructured parameters, return values,
-exceptions, yields, typedefs, callbacks, properties, modules, inline tags, and
-other JSDoc forms must be claimed only when the filter has corresponding accepted
-governance and executable evidence.
+dotted properties, rest parameters, destructured parameters, exceptions, yields,
+typedefs, callbacks, properties, modules, inline tags, and other JSDoc forms must
+be claimed only when the filter has corresponding accepted governance and
+executable evidence.
 
 ## Repository self-documentation
 

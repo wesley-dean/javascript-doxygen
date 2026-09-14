@@ -147,6 +147,48 @@ function translate_param(line,    prefix, work, type, token, name, description, 
   return result
 }
 
+## @fn translate_returns(line)
+## @brief Translates one canonical typed JSDoc `@returns` record.
+## @details
+## Recognizes only the governed form `@returns {Type} Description.` inside a
+## supported JSDoc block.  Doxygen already recognizes `@returns`, so the filter
+## retains that command while moving the JSDoc type expression into visible prose.
+##
+## @param line JSDoc source record to translate.
+## @local prefix Leading indentation retained from the source record.
+## @local work Scratch copy used while extracting fields.
+## @local type Maintained JSDoc type expression without surrounding braces.
+## @local description Maintained return-value description.
+##
+## @par STDIN
+## Nothing is read directly from STDIN.
+## @par STDOUT
+## Nothing is written to STDOUT.
+## @par STDERR
+## Nothing is written to STDERR.
+##
+## @returns A translated Doxygen-facing record when the governed form matches;
+## otherwise the original record unchanged.
+function translate_returns(line,    prefix, work, type, description) {
+  if (line !~ /^[[:space:]]*\*[[:space:]]+@returns[[:space:]]+\{[^}]+\}[[:space:]]+.+$/) {
+    return line
+  }
+
+  prefix = line
+  sub(/\*.*/, "", prefix)
+
+  work = line
+  sub(/^[[:space:]]*\*[[:space:]]+@returns[[:space:]]+\{/, "", work)
+
+  type = work
+  sub(/\}.*/, "", type)
+
+  description = work
+  sub(/^[^}]*\}[[:space:]]+/, "", description)
+
+  return prefix "* @returns " description " Type: " type "."
+}
+
 ## @rule filter_source
 ## @brief Preserves JavaScript source while translating governed JSDoc records.
 ##
@@ -173,5 +215,6 @@ function translate_param(line,    prefix, work, type, token, name, description, 
     next
   }
 
-  print translate_param($0)
+  line = translate_param($0)
+  print translate_returns(line)
 }

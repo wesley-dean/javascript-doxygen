@@ -5,16 +5,16 @@ JavaScript.  The long-term goal is to let JavaScript remain JavaScript-native,
 with JSDoc-style source documentation translated only where Doxygen needs help.
 
 The maintained filter is `doxygen-javascript.awk`.  It currently supports the
-canonical simple-parameter forms governed by ADR-013 and ADR-014: required
-parameters, optional parameters, and optional parameters with compact documented
-defaults.  Unsupported forms remain unchanged.  The filter does not infer
-JavaScript semantics or claim a complete JavaScript/Doxygen integration.
+canonical simple-parameter forms governed by ADR-013 and ADR-014, plus canonical
+typed `@returns` records governed by ADR-016.  Unsupported forms remain unchanged.
+The filter does not infer JavaScript semantics or claim a complete
+JavaScript/Doxygen integration.
 
 ## Current capability
 
 For newline-terminated JavaScript input, the filter preserves source records and
-translates supported JSDoc parameter records inside conservatively recognized
-multi-line JSDoc blocks.
+translates supported JSDoc records inside conservatively recognized multi-line
+JSDoc blocks.
 
 A required parameter:
 
@@ -52,10 +52,23 @@ is translated to:
 @param name The name to greet. Type: string. Optional. Default: World.
 ```
 
+A typed return value:
+
+```text
+@returns {Promise<Configuration>} Validated configuration owned by the caller.
+```
+
+is translated to:
+
+```text
+@returns Validated configuration owned by the caller. Type: Promise<Configuration>.
+```
+
 The maintained JavaScript source remains unchanged.  The filter preserves type and
 default text without interpreting either.  Current default-token support requires
 non-empty text containing neither whitespace nor `]`.  Unsupported forms such as
-dotted property notation continue to pass through unchanged.
+dotted property notation, singular `@return`, and untyped `@returns` continue to
+pass through unchanged.
 
 Run the filter with:
 
@@ -91,12 +104,12 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves five behaviors: ordinary JavaScript passes through
+The current suite proves seven behaviors: ordinary JavaScript passes through
 unchanged; canonical required parameters translate; optional parameters with and
-without compact documented defaults translate; and unsupported dotted property
-notation remains visible unchanged while supported records in the same block still
-translate.  Future documentation translations should grow the suite one focused
-behavior at a time.
+without compact documented defaults translate; unsupported dotted property
+notation remains visible unchanged; canonical typed `@returns` records translate;
+and singular `@return` remains visible unchanged.  Future documentation
+translations should grow the suite one focused behavior at a time.
 
 ## Project reference documentation
 
@@ -130,8 +143,8 @@ that those interfaces are supported here.
 
 The following JavaScript-specific capabilities remain deliberately deferred:
 
-- complex JSDoc parameter forms and tags beyond the accepted simple-parameter
-  contracts;
+- complex JSDoc parameter forms and tags beyond the accepted parameter and typed
+  return contracts;
 - exercising JavaScript source through Doxygen with `doxygen-javascript.awk`;
 - JavaScript/Doxygen integration assertions;
 - generated consumer artifacts and checksums;
@@ -140,9 +153,9 @@ The following JavaScript-specific capabilities remain deliberately deferred:
 
 Those capabilities should be enabled only after their JavaScript-specific
 contracts are governed and tested.  ADR-012 records the bootstrap boundary,
-ADR-013 governs required parameters, ADR-014 governs optional parameters, and
-ADR-015 distinguishes supported project self-documentation from deferred
-JavaScript/Doxygen integration.
+ADR-013 governs required parameters, ADR-014 governs optional parameters, ADR-015
+distinguishes supported project self-documentation from deferred JavaScript/Doxygen
+integration, and ADR-016 governs canonical typed return translation.
 
 ## Coding standards and governance
 
