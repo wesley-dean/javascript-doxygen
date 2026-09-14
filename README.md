@@ -4,24 +4,37 @@
 JavaScript.  The long-term goal is to let JavaScript remain JavaScript-native,
 with JSDoc-style source documentation translated only where Doxygen needs help.
 
-The project is currently in its bootstrap milestone.  The maintained filter is
-`doxygen-javascript.awk`, and its only implemented behavior is source pass-through.
-It does not yet translate JSDoc, infer JavaScript semantics, or claim a complete
-Doxygen integration.
+The maintained filter is `doxygen-javascript.awk`.  Its first implemented JSDoc
+translation supports canonical required parameters of the form
+`@param {Type} name - Description.` while preserving unsupported forms unchanged.
+It does not infer JavaScript semantics or claim a complete Doxygen integration.
 
 ## Current capability
 
-For newline-terminated JavaScript input, the bootstrap filter writes each source
-record back to STDOUT without documentation transformation.
+For newline-terminated JavaScript input, the filter preserves source records and
+translates canonical required JSDoc parameter records inside conservatively
+recognized multi-line JSDoc blocks.
 
-Run it with:
+For example:
+
+```text
+@param {string} name - The name to greet.
+```
+
+is translated at the Doxygen boundary to:
+
+```text
+@param name The name to greet. Type: string.
+```
+
+The maintained JavaScript source remains unchanged.  Unsupported JSDoc forms,
+including optional/defaulted parameters, currently pass through unchanged.
+
+Run the filter with:
 
 ```sh
 awk -f doxygen-javascript.awk -- path/to/source.js
 ```
-
-That deliberately modest behavior gives the project an executable filter boundary
-before JSDoc translations are introduced.
 
 ## Regression tests
 
@@ -51,8 +64,9 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The bootstrap suite currently contains one intentionally trivial assertion:
-ordinary JavaScript passes through the filter unchanged.  Future documentation
+The current suite proves three behaviors: ordinary JavaScript passes through
+unchanged, canonical required JSDoc parameters are translated, and unsupported
+optional/defaulted parameters remain visible unchanged.  Future documentation
 translations should grow the suite one focused behavior at a time.
 
 ## Deferred capabilities
@@ -64,14 +78,16 @@ that those interfaces are supported here.
 
 The following JavaScript-specific capabilities remain deliberately deferred:
 
-- JSDoc tag translation;
+- additional JSDoc parameter forms and tags beyond the accepted required-parameter
+  contract;
 - Doxygen integration tests for JavaScript;
 - generated consumer artifacts and checksums;
 - documentation canary publication; and
 - semantic-version release publication.
 
 Those capabilities should be enabled only after their JavaScript-specific
-contracts are governed and tested.  ADR-012 records this bootstrap boundary.
+contracts are governed and tested.  ADR-012 records the bootstrap boundary, and
+ADR-013 governs the first required-parameter translation.
 
 ## Coding standards and governance
 
