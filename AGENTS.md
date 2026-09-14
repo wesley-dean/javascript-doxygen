@@ -12,10 +12,11 @@ The maintained filter is `doxygen-javascript.awk`.
 The current implementation translates only the accepted simple-parameter JSDoc
 forms governed by ADR-013 and ADR-014, canonical typed `@returns` records governed
 by ADR-016, and canonical typed-and-described `@throws` records governed by
-ADR-017.  Unsupported JSDoc constructs remain visible unchanged.  Do not claim
-broader JSDoc translation, JavaScript semantic analysis, JavaScript/Doxygen
-integration, generated consumer artifacts, or release support until executable
-evidence and governing decisions exist.
+ADR-017.  ADR-018 exercises those governed forms through Doxygen's JavaScript
+parser.  Unsupported JSDoc constructs remain visible unchanged.  Do not claim
+broader JSDoc translation, JavaScript semantic analysis, generated consumer
+artifacts, or release support until executable evidence and governing decisions
+exist.
 
 ## Governing Documentation
 
@@ -24,8 +25,8 @@ Before changing the repository, review `README.md`, this file,
 every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
-compatibility, documentation-publication, or release changes require an ADR unless
-existing governance already covers the decision.
+compatibility, documentation-publication, integration, or release changes require
+an ADR unless existing governance already covers the decision.
 
 Files under `doc/standards/` are governing project requirements when applicable.
 General and cross-cutting standards apply where relevant; language-specific
@@ -65,6 +66,8 @@ parameters with and without compact documented defaults.  ADR-016 adds canonical
 typed `@returns` translation while preserving the `@returns` command itself.
 ADR-017 adds canonical typed-and-described `@throws` translation by removing the
 JSDoc type braces and preserving Doxygen's native exception-object position.
+ADR-018 establishes downstream JavaScript/Doxygen integration evidence for those
+already-governed forms.
 
 Supported parameter names remain simple JavaScript identifiers.  The filter keeps
 type expressions and supported optional defaults as textual documentation data
@@ -87,6 +90,12 @@ unsupported syntax to speculative semantic claims.  Do not add JavaScript parsin
 type inference, inferred behavior, or broad JSDoc semantics without explicit
 governance and focused tests.
 
+The currently governed filter transformations preserve one physical output record
+for every input record.  Doxygen's input-filter contract associates filtered text
+with source locations and source-browser anchors, so proposals that add or remove
+physical lines require explicit governance plus integration evidence rather than
+being treated as harmless formatting changes.
+
 Copied Python implementation, tests, ADRs, and workflow history may remain during
 migration as reference material.  They are not current JavaScript capability
 claims where ADR-012 and later JavaScript-specific decisions supersede their
@@ -107,7 +116,7 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves ordinary source pass-through; required-parameter
+The current TAP suite proves ordinary source pass-through; required-parameter
 translation; optional-parameter translation with and without compact documented
 defaults; visible pass-through of unsupported dotted property notation; canonical
 typed `@returns` translation; visible pass-through of singular `@return`;
@@ -115,6 +124,21 @@ canonical typed-and-described `@throws` translation; and visible pass-through of
 description-only and type-only throws forms.  Add a focused fixture and expected
 output when adding each new supported translation behavior.  Tests should protect
 externally observable behavior rather than internal helper structure.
+
+ADR-018 adds a separate downstream integration surface beneath `test/doxygen/`.
+Use:
+
+```sh
+make test-doxygen AWK_BIN=mawk
+make test-doxygen AWK_BIN=gawk
+```
+
+The integration configuration parses `.js` input as JavaScript, applies the
+maintained filter through Doxygen's input-filter mechanism, generates XML, and
+checks semantic structure for governed parameter, return, and exception forms.
+CI SHALL exercise this path under both portable-AWK implementations.  Keep this
+surface separate from `make test` so textual filter failures and downstream
+Doxygen failures remain independently diagnosable.
 
 ## Project Self-Documentation
 
@@ -135,19 +159,19 @@ The documentation canary SHALL exercise this path on pull requests.  Pages SHALL
 publish the generated `doc/reference/` tree after pushes to `main`.  Generated
 `vendor/`, `doc/reference/`, and `doc/adr/README.md` state remains untracked.
 
-Do not treat successful project self-documentation as evidence that JavaScript
-source has been exercised through Doxygen with `doxygen-javascript.awk`.
+Project self-documentation and JavaScript/Doxygen integration are separate
+capabilities with separate evidence.  Passing one does not substitute for the
+other.
 
 ## Deferred Infrastructure
 
-JavaScript/Doxygen integration testing, generated consumer artifacts, checksums,
-semantic-version release publication, and release-artifact canaries remain
-deferred under ADR-012 and ADR-015.  Do not add no-op compatibility targets merely
-to make copied workflows succeed.
+Generated consumer artifacts, checksums, semantic-version release publication,
+and release-artifact canaries remain deferred under ADR-012 and ADR-015.  Do not
+add no-op compatibility targets merely to make copied workflows succeed.
 
 ## Engineering Approach
 
 Keep changes surgical and reviewable.  Accuracy is more important than apparent
 completeness.  Distinguish implemented behavior from planned behavior, state
-uncertainty explicitly, and do not widen the parser or documentation boundary
-without governance and focused executable evidence.
+uncertainty explicitly, and do not widen the parser, generated representation, or
+documentation boundary without governance and focused executable evidence.

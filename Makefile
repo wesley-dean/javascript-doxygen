@@ -5,6 +5,9 @@ SHELL := /bin/sh
 
 AWK_BIN ?= awk
 SOURCE_FILTER := doxygen-javascript.awk
+INTEGRATION_CONFIG := test/doxygen/Doxyfile
+INTEGRATION_OUT := test/doxygen/out
+DOXYGEN_JAVASCRIPT_FILTER ?= $(SOURCE_FILTER)
 
 VENDOR_DIR := vendor
 DOCS_MANIFEST := dependencies-docs.txt
@@ -23,7 +26,7 @@ REFERENCE_DOC_DIR := doc/reference
 AWK_DOXYGEN_FILTER ?= $(VENDOR_AWK_FILTER)
 BASH_DOXYGEN_FILTER ?= $(VENDOR_BASH_FILTER)
 
-.PHONY: adr-index clean deps-docs deps-docs-check distclean docs docs-canary docs-clean test test-source verify-bashdeps FORCE
+.PHONY: adr-index clean deps-docs deps-docs-check distclean docs docs-canary docs-clean integration-clean test test-doxygen test-source verify-bashdeps FORCE
 
 test: test-source
 
@@ -31,6 +34,25 @@ test: test-source
 test-source:
 	@test -f "$(SOURCE_FILTER)" || { printf '%s\n' 'Missing JavaScript Doxygen filter' >&2; exit 1; }
 	DOXYGEN_JAVASCRIPT_FILTER="$(abspath $(SOURCE_FILTER))" AWK_BIN="$(AWK_BIN)" bash ./test/run-tests.sh
+
+## Exercise governed JavaScript fixtures through Doxygen with the selected filter.
+test-doxygen:
+	@test -f "$(DOXYGEN_JAVASCRIPT_FILTER)" || { printf '%s\n' 'Missing JavaScript Doxygen filter' >&2; exit 1; }
+	@command -v doxygen >/dev/null 2>&1 || { printf '%s\n' 'doxygen is required for make test-doxygen' >&2; exit 1; }
+	$(MAKE) --no-print-directory integration-clean
+	AWK_BIN="$(AWK_BIN)" DOXYGEN_JAVASCRIPT_FILTER="$(abspath $(DOXYGEN_JAVASCRIPT_FILTER))" doxygen "$(INTEGRATION_CONFIG)"
+	grep -R -q '<parameterlist kind="param">' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<parametername>value</parametername>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<parametername>strict</parametername>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Value to normalize' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Optional.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Default: true.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<simplesect kind="return">' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'The canonical normalized value' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'Type: string.' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<parameterlist kind="exception">' "$(INTEGRATION_OUT)/xml"
+	grep -R -q '<parametername>TypeError</parametername>' "$(INTEGRATION_OUT)/xml"
+	grep -R -q 'not a string' "$(INTEGRATION_OUT)/xml"
 
 FORCE:
 
@@ -109,11 +131,15 @@ docs-canary:
 	BASH_DOXYGEN_FILTER="$(abspath $(BASH_DOXYGEN_FILTER))" \
 		doxygen Doxyfile
 
+## Remove generated JavaScript/Doxygen integration output.
+integration-clean:
+	rm -rf "$(INTEGRATION_OUT)"
+
 ## Remove generated project reference documentation.
 docs-clean:
 	rm -rf "$(REFERENCE_DOC_DIR)"
 
-clean: docs-clean
+clean: integration-clean docs-clean
 
 ## Remove generated reference, ADR-navigation, and documentation dependency state.
 distclean: clean

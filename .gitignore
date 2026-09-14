@@ -2,3 +2,4 @@
 /vendor/
 /doc/reference/
 /doc/adr/README.md
+/test/doxygen/out/
