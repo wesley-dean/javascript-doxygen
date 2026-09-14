@@ -106,6 +106,19 @@ Doxygen semantic assertions.  Matching tag names alone do not establish native
 compatibility; future forms still require focused evidence.  See
 [ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
 
+## Virtual JSDoc typedef representation
+
+ADR-021 represents canonical named JSDoc virtual typedefs as Doxygen related pages
+rather than pretending they are runtime JavaScript declarations.  The filter emits
+a line-preserving generated `@jstypedef` alias invocation with a deterministic
+lowercase internal page label, while the visible page title remains the exact JSDoc
+typedef name and the maintained base type remains visible documentation.  This
+provides a named, navigable, `@ref`-addressable documentation entity without
+fabricating a class, struct, interface, function, variable, or native typedef;
+`@property`, `@callback`, general `@type`, and automatic type-expression linking
+remain separate future decisions.  See
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
+
 ## Capability scope and epistemic honesty
 
 The project distinguishes implemented behavior from planned behavior and makes
@@ -113,12 +126,12 @@ capability claims only when evidence supports them.  ADR-012 established the
 initial pass-through baseline, ADR-013 added required simple parameters, ADR-014
 added optional simple parameters with and without compact documented defaults,
 ADR-016 added canonical typed return translation, ADR-017 added canonical typed
-exception translation, ADR-019 adds canonical typed yield translation, and
-ADR-020 adds evidence-backed native-compatible support for `@deprecated` and
-`@see`.  ADR-015 establishes self-documentation as a separate supported
-capability, while ADR-018 adds downstream Doxygen evidence for governed forms.
-Broader JSDoc support, consumer artifacts, and release publication remain deferred
-until separately governed and proven.  See
+exception translation, ADR-019 adds canonical typed yield translation, ADR-020
+adds evidence-backed native-compatible support for `@deprecated` and `@see`, and
+ADR-021 adds named virtual typedef pages.  ADR-015 establishes self-documentation
+as a separate supported capability, while ADR-018 adds downstream Doxygen evidence
+for governed forms.  Broader JSDoc support, consumer artifacts, and release
+publication remain deferred until separately governed and proven.  See
 [ADR-000](adr/ADR-000-capability-scope-and-epistemic-honesty.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
@@ -127,8 +140,9 @@ until separately governed and proven.  See
 [ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md),
 [ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Supported Python documentation scope
 
@@ -157,8 +171,10 @@ selected representations through Doxygen-generated XML and establishes line
 preservation as an integration property.  ADR-019 preserves that property for
 yields by emitting a single-line `@jsyields` command whose logical paragraph break
 is supplied by a consumer-side Doxygen alias.  ADR-020 establishes that no
-generated representation is preferable when maintained JSDoc is already a
-native-compatible Doxygen command.  See
+generated representation is preferable when maintained JSDoc is already a native-
+compatible Doxygen command.  ADR-021 extends the alias-backed model to virtual
+typedefs, using related pages to preserve named identity without inventing runtime
+source semantics.  See
 [ADR-002](adr/ADR-002-preserve-python-and-translate-docstrings.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
@@ -166,8 +182,9 @@ native-compatible Doxygen command.  See
 [ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md),
 [ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Yields translation
 
@@ -192,13 +209,16 @@ JavaScript consumer-artifact and release contract until corresponding behavior i
 defined and tested.  ADR-018 establishes integration evidence only, while ADR-019
 adds a checked-in consumer configuration fragment for yields without declaring a
 versioned release artifact.  ADR-020 adds no consumer artifact because its native
-forms require no generated compatibility configuration.  See
+forms require no generated compatibility configuration.  ADR-021 extends the
+checked-in consumer configuration with a virtual-typedef alias while leaving the
+release boundary deferred.  See
 [ADR-004](adr/ADR-004-build-and-release-versioned-filter.md),
 [ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Behavior-focused fixtures
 
@@ -213,7 +233,9 @@ throws boundaries.  ADR-018 complements those textual fixtures with downstream
 Doxygen integration fixtures.  ADR-019 adds typed-yields positive/negative
 fixtures and strengthens the TAP harness so every fixture proves physical
 line-count preservation.  ADR-020 adds exact pass-through and downstream semantic
-evidence for native-compatible `@deprecated` and `@see` forms.  See
+evidence for native-compatible `@deprecated` and `@see` forms.  ADR-021 adds
+positive and negative typedef fixtures plus integration assertions for named page
+creation and `@ref` resolution.  See
 [ADR-005](adr/ADR-005-use-small-behavior-focused-fixtures.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
@@ -221,8 +243,9 @@ evidence for native-compatible `@deprecated` and `@see` forms.  See
 [ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md),
 [ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Shared project infrastructure
 
@@ -236,13 +259,15 @@ language and testing both supported AWK implementations.  ADR-019 deliberately
 departs from the copied Python yields implementation where its extra physical line
 would conflict with the JavaScript integration contract.  ADR-020 further narrows
 the filter's role by preferring proven native Doxygen commands over unnecessary
-rewrites.  See
+rewrites.  ADR-021 reuses the established consumer-alias boundary while rejecting
+synthetic declarations for virtual JavaScript documentation types.  See
 [ADR-006](adr/ADR-006-adopt-sibling-build-test-and-documentation-infrastructure.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-015](adr/ADR-015-restore-project-self-documentation.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Release publication and downstream pinning
 
@@ -251,15 +276,16 @@ artifact.  ADR-012 defers any equivalent JavaScript release interface; no
 `javascript-doxygen` consumer artifact should be treated as published or stable
 until a later accepted decision establishes that contract.  ADR-015 restores only
 project reference-documentation publication, ADR-018 restores only integration
-testing, ADR-019 introduces a checked-in alias fragment without promoting the
-filter or configuration to a released artifact, and ADR-020 introduces no new
-release surface.  See
+testing, ADR-019 and ADR-021 extend checked-in consumer alias configuration without
+promoting the filter or configuration to released artifacts, and ADR-020 introduces
+no new release surface.  See
 [ADR-007](adr/ADR-007-publish-and-canary-exact-release-artifacts.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-015](adr/ADR-015-restore-project-self-documentation.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Scenario-level program regressions
 
@@ -267,13 +293,15 @@ ADR-008 added larger Python program regressions alongside focused fixtures.  Tho
 fixtures remain migration reference material.  ADR-012 governs the focused
 JavaScript TAP suite, while ADR-018 adds targeted downstream integration fixtures
 rather than establishing a broad scenario-level JavaScript regression suite.
-ADR-019 adds a focused generator integration fixture for yields, and ADR-020 adds
-a focused native-tag fixture without broadening that scope.  See
+ADR-019 adds a focused generator integration fixture for yields, ADR-020 adds a
+focused native-tag fixture, and ADR-021 adds a focused virtual-typedef and
+cross-reference fixture without broadening that scope.  See
 [ADR-008](adr/ADR-008-add-scenario-level-program-regressions.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Standards-conforming docstring recognition
 
@@ -282,10 +310,11 @@ not carry those Python-specific recognition rules into JavaScript.  ADR-013 adds
 separate JavaScript recognition boundary for required simple JSDoc parameters,
 ADR-014 extends that boundary to bracketed simple optional parameters, ADR-016
 adds a separate recognition boundary for canonical typed `@returns` records,
-ADR-017 adds a typed-and-described `@throws` boundary, and ADR-019 adds a canonical
+ADR-017 adds a typed-and-described `@throws` boundary, ADR-019 adds a canonical
 typed-and-described `@yields` boundary while leaving unsupported yields forms
-unchanged.  ADR-020 does not add a parser recognition rule for `@deprecated` or
-`@see`; it governs evidence-backed unchanged pass-through for those compatible
+unchanged, and ADR-021 adds a narrow simple-identifier boundary for canonical
+virtual typedefs.  ADR-020 does not add a parser recognition rule for `@deprecated`
+or `@see`; it governs evidence-backed unchanged pass-through for those compatible
 forms.  ADR-018 tests downstream Doxygen interpretation without widening source
 semantics.  See
 [ADR-009](adr/ADR-009-expand-standards-conforming-docstring-recognition.md),
@@ -295,8 +324,9 @@ semantics.  See
 [ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md),
 [ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
 
 ## Unannotated type fields
 
@@ -306,15 +336,18 @@ translation.  ADR-013 and ADR-014 preserve JSDoc parameter type expressions as
 visible prose, ADR-016 extends that strategy to canonical return type expressions,
 ADR-017 uses Doxygen's native exception-object slot for canonical exception types,
 and ADR-019 preserves canonical yield types as visible `Type:` prose within the
-alias-backed `Yields` paragraph; none establishes a general JavaScript Doxygen
-type-field contract.  ADR-018 verifies selected resulting structures without
-adding a general type-field translation, and ADR-020 does not alter type handling.
-See [ADR-010](adr/ADR-010-translate-unannotated-type-fields.md),
+alias-backed `Yields` paragraph.  ADR-021 preserves a virtual typedef's maintained
+base type as visible prose on its related page, but does not establish general
+`@type` handling or automatic linking of arbitrary type expressions.  ADR-018
+verifies selected resulting structures, and ADR-020 does not alter type handling.
+See
+[ADR-010](adr/ADR-010-translate-unannotated-type-fields.md),
 [ADR-012](adr/ADR-012-bootstrap-javascript-filter-and-tap-regression-contract.md),
 [ADR-013](adr/ADR-013-translate-required-jsdoc-parameters.md),
 [ADR-014](adr/ADR-014-translate-optional-jsdoc-parameters.md),
 [ADR-016](adr/ADR-016-translate-typed-jsdoc-returns.md),
 [ADR-017](adr/ADR-017-translate-typed-jsdoc-throws.md),
 [ADR-018](adr/ADR-018-enable-javascript-doxygen-integration-testing.md),
-[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md), and
-[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md).
+[ADR-019](adr/ADR-019-translate-typed-jsdoc-yields-with-alias.md),
+[ADR-020](adr/ADR-020-preserve-native-compatible-jsdoc-tags.md), and
+[ADR-021](adr/ADR-021-represent-virtual-jsdoc-typedefs-as-related-pages.md).
