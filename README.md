@@ -9,10 +9,11 @@ canonical simple-parameter forms governed by ADR-013 and ADR-014, canonical type
 `@returns` records governed by ADR-016, canonical typed-and-described `@throws`
 records governed by ADR-017, canonical typed `@yields` records governed by ADR-019,
 native-compatible `@deprecated` and `@see` records governed by ADR-020, canonical
-virtual `@typedef` records governed by ADR-021, and canonical properties of those
-virtual typedefs governed by ADR-022.  ADR-018 exercises governed forms through
-Doxygen's JavaScript parser.  Unsupported forms remain unchanged.  The filter does
-not infer JavaScript semantics or claim complete JSDoc coverage.
+virtual `@typedef` records governed by ADR-021, canonical properties of those
+virtual typedefs governed by ADR-022, and canonical named `@callback` contracts
+governed by ADR-023.  ADR-018 exercises governed forms through Doxygen's JavaScript
+parser.  Unsupported forms remain unchanged.  The filter does not infer JavaScript
+semantics or claim complete JSDoc coverage.
 
 ## Current capability
 
@@ -152,16 +153,38 @@ virtual-type page.  The property is not promoted to a fake JavaScript member or 
 separate generated entity.  A property outside a governed virtual typedef block
 remains visibly unchanged.
 
+A named reusable callback contract:
+
+```text
+@callback Handler
+@param {string} value - Normalized value supplied to the callback.
+@returns {boolean} True when the value is accepted.
+```
+
+is represented as a second kind of virtual documentation page.  The callback line
+becomes:
+
+```text
+@jscallback{jsdocvirtualcallbackuhlalnldlllelr||Handler}
+```
+
+while the already-governed parameter and return records retain their existing
+translations.  Doxygen renders those sections inside the `Handler` related page,
+so the callback remains a named, cross-referenceable interface without fabricating
+a JavaScript function declaration.  Callback labels use a distinct generated
+namespace from typedef labels so equal maintained names cannot collide.
+
 The maintained JavaScript source remains unchanged.  The filter preserves type and
 default text without interpreting either.  Current default-token support requires
 non-empty text containing neither whitespace nor `]`.  Typed `@throws` support
 requires a compact exception type without whitespace plus a non-empty description.
-Virtual typedef and supported typedef-property names currently require simple
-JavaScript identifiers.  Unsupported forms such as dotted property notation,
-singular `@return`, untyped `@returns`, description-only `@throws`, type-only
-`@throws`, description-only `@yields`, type-only `@yields`, dotted typedef names,
-untyped typedefs, standalone properties, and complex property forms continue to
-pass through unchanged.
+Virtual typedef, supported typedef-property, and supported callback names currently
+require simple JavaScript identifiers.  Unsupported forms such as dotted property
+notation, singular `@return`, untyped `@returns`, description-only `@throws`,
+type-only `@throws`, description-only `@yields`, type-only `@yields`, dotted
+typedef names, untyped typedefs, standalone properties, complex property forms,
+and callback namepaths such as `Requester~requestCallback` continue to pass through
+unchanged.
 
 All governed transformations preserve one output record for each input record.
 The TAP suite checks this invariant for every fixture.  That line correspondence is
@@ -202,7 +225,7 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves sixteen behaviors: ordinary JavaScript passes through
+The current suite proves eighteen behaviors: ordinary JavaScript passes through
 unchanged; canonical required parameters translate; optional parameters with and
 without compact documented defaults translate; unsupported dotted property
 notation remains visible unchanged; canonical typed `@returns` records translate;
@@ -213,8 +236,10 @@ description-only and type-only `@yields` forms remain unchanged; native-compatib
 `@deprecated` and `@see` records pass through unchanged; canonical virtual
 `@typedef` records translate to related-page aliases; unsupported typedef forms
 remain unchanged; canonical properties following a governed virtual typedef
-translate to page paragraphs; and standalone properties remain unchanged.  Every
-fixture also proves that filtering preserves physical line count.
+translate to page paragraphs; standalone properties remain unchanged; canonical
+simple callbacks translate to virtual callback pages; and unsupported callback
+namepaths remain unchanged.  Every fixture also proves that filtering preserves
+physical line count.
 
 ## JavaScript/Doxygen integration
 
@@ -224,8 +249,9 @@ Doxygen's JavaScript parser rather than translating JavaScript into another sour
 language.  ADR-019 extends that integration surface to the alias-backed `Yields`
 representation, ADR-020 uses the same surface to prove native-compatible tag
 semantics, ADR-021 uses it to prove named virtual typedef pages and cross-reference
-resolution, and ADR-022 proves that governed properties render on the corresponding
-virtual-type page.
+resolution, ADR-022 proves that governed properties render on the corresponding
+virtual-type page, and ADR-023 proves named callback pages with parameter and return
+sections.
 
 Run the integration suite with either supported AWK implementation:
 
@@ -237,16 +263,18 @@ make test-doxygen AWK_BIN=gawk
 The integration Doxyfile applies `doxygen-javascript.awk` through
 `FILTER_PATTERNS`, loads `doxygen-javascript.conf`, generates XML, and verifies
 semantic output structure for governed parameter, return, exception, yield,
-deprecation, see-also, virtual typedef, and typedef-property forms.  The yields
-assertions verify a dedicated `Yields` paragraph plus source-location evidence for
-the generator fixture.  Native-tag assertions verify that unchanged `@deprecated`
-and `@see` records are interpreted by Doxygen rather than merely surviving the
-filter.  The typedef assertions verify a named related page, retained source prose
-and base type, and a resolved Doxygen `@ref` to the generated virtual type.  The
-property assertions verify the `Property: name` heading, documented type, and
-maintained description inside that virtual typedef page.  CI runs this surface
-separately from the TAP suite so a textual filter regression can be distinguished
-from a downstream Doxygen integration regression.
+deprecation, see-also, virtual typedef, typedef-property, and callback forms.  The
+yields assertions verify a dedicated `Yields` paragraph plus source-location
+evidence for the generator fixture.  Native-tag assertions verify that unchanged
+`@deprecated` and `@see` records are interpreted by Doxygen rather than merely
+surviving the filter.  The typedef assertions verify a named related page, retained
+source prose and base type, and a resolved Doxygen `@ref` to the generated virtual
+type.  The property assertions verify the `Property: name` heading, documented
+type, and maintained description inside that virtual typedef page.  Callback
+assertions verify the named related page, parameter and return sections inside that
+page, and a resolved Doxygen `@ref` to the generated callback label.  CI runs this
+surface separately from the TAP suite so a textual filter regression can be
+distinguished from a downstream Doxygen integration regression.
 
 Generated integration output beneath `test/doxygen/out/` is ephemeral and ignored
 by Git.  Passing integration tests demonstrate only the explicitly exercised forms
@@ -286,8 +314,10 @@ The following capabilities remain deliberately deferred:
 
 - complex JSDoc parameter and property forms beyond the explicitly accepted
   contracts;
-- `@callback` and general `@type` handling;
-- automatic linking of arbitrary type expressions to virtual typedef pages;
+- scoped or otherwise complex callback namepaths;
+- general `@type` handling;
+- automatic linking of arbitrary type expressions to virtual typedef or callback
+  pages;
 - generated consumer artifacts and checksums;
 - semantic-version release publication; and
 - release-artifact canaries.
@@ -300,7 +330,8 @@ translation, ADR-017 governs canonical typed exception translation, ADR-018
 governs JavaScript/Doxygen integration testing, ADR-019 governs alias-backed typed
 yield translation, ADR-020 governs evidence-driven native-compatible tag
 pass-through, ADR-021 governs related-page representation for virtual typedefs,
-and ADR-022 governs canonical child properties of those virtual typedefs.
+ADR-022 governs canonical child properties of those virtual typedefs, and ADR-023
+governs named virtual callback pages.
 
 ## Coding standards and governance
 

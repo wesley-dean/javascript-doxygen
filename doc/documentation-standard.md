@@ -172,16 +172,49 @@ Dotted or optional property names, defaults, nested structural forms, alias-fiel
 content containing the current `||` transport separator, and other complex
 property forms remain outside the accepted boundary.
 
-The current typedef/property boundary does not establish `@callback`, general
-`@type`, or automatic linking of arbitrary type expressions to virtual typedef
-pages.  Those constructs remain valid maintained JSDoc under the shared standard,
-but repository support requires separate governance and executable evidence.
+## Virtual Callbacks
 
-Unsupported parameter, typedef, and property forms remain unchanged.  Dotted
-property names, optional dotted properties, rest parameters, destructured
-parameters, unsupported typedef names, standalone properties, callbacks, modules,
-inline tags, general `@type`, and other JSDoc forms must be claimed only when the
-filter has corresponding accepted governance and executable evidence.
+ADR-023 adds canonical named callback contracts:
+
+```text
+@callback Name
+```
+
+for simple JavaScript identifiers.  The maintained source remains ordinary JSDoc.
+The filter translates the callback record to a generated `@jscallback` alias
+invocation on the same physical source line.  The alias expands inside Doxygen to
+a related page whose visible title is the exact maintained callback name.
+
+Callback pages use the same related-page entity model as virtual typedefs because a
+named JSDoc callback is a reusable documentation interface that may have no
+dedicated runtime function declaration.  The generated representation must not
+fabricate a JavaScript function, method, class, interface, variable, or native
+Doxygen function symbol merely to make the callback navigable.
+
+Generated callback labels use the deterministic character encoding established for
+virtual typedefs with a distinct `jsdocvirtualcallback` prefix.  A callback and a
+typedef with the same maintained name therefore remain separate generated entities.
+The generated label is derivative representation, not maintained-source API.
+
+Already-governed canonical parameter and return records in the same callback block
+retain the ADR-013, ADR-014, and ADR-016 translations.  Doxygen integration tests
+prove that those records become parameter and return sections inside the callback
+page without requiring a function declaration.  No second callback-specific
+parameter or return syntax is maintained while the existing governed
+representations remain sufficient.
+
+General JSDoc namepaths such as `Requester~requestCallback`, other scoped callback
+names, general `@type`, and automatic linking of arbitrary type expressions to
+virtual typedef or callback pages remain outside the accepted boundary.  Those
+constructs remain valid maintained JSDoc under the shared standard, but repository
+support requires separate governance and executable evidence.
+
+Unsupported parameter, typedef, property, and callback forms remain unchanged.
+Dotted property names, optional dotted properties, rest parameters, destructured
+parameters, unsupported typedef names, standalone properties, complex callback
+namepaths, modules, inline tags, general `@type`, and other JSDoc forms must be
+claimed only when the filter has corresponding accepted governance and executable
+evidence.
 
 ## JavaScript/Doxygen integration
 
@@ -196,8 +229,9 @@ documentation, visible optional/default prose, return documentation in a Doxygen
 return section, exception documentation in a Doxygen exception parameter list, a
 dedicated alias-backed `Yields` paragraph under ADR-019, native deprecation and
 see-also structure under ADR-020, a named related-page representation for virtual
-typedefs under ADR-021, and structured property paragraphs on those pages under
-ADR-022.
+typedefs under ADR-021, structured property paragraphs on those pages under
+ADR-022, and named related callback pages with parameter and return sections under
+ADR-023.
 
 Use:
 
@@ -212,15 +246,17 @@ physical line preservation, while the Doxygen integration surface proves that th
 downstream documentation engine interprets selected governed output as intended.
 For typedef properties, integration assertions target the generated virtual typedef
 page directly so the property heading, type, and description cannot pass merely by
-appearing elsewhere in generated source XML.
+appearing elsewhere in generated source XML.  Callback assertions similarly target
+the generated callback page directly and prove its parameter, return, and
+cross-reference structure.
 
 All current governed transformations and native-compatible forms preserve one
 physical output record for every input record.  `test/run-tests.sh` checks physical
 line-count equality for every fixture.  That line correspondence is part of the
 integration boundary because Doxygen associates filtered input with source
-locations and source-browser anchors.  ADR-019, ADR-021, and ADR-022 use Doxygen
-alias expansion so logical documentation structure does not require the filter to
-add physical lines.
+locations and source-browser anchors.  ADR-019 and ADR-021 through ADR-023 use
+Doxygen alias expansion so logical documentation structure does not require the
+filter to add physical lines.
 
 A future representation that adds or removes physical lines requires a new
 decision and integration evidence; it must not be inherited mechanically from a
@@ -246,7 +282,7 @@ The generated ADR landing page and reference output are not maintained source.
 
 Successful self-documentation does not expand the supported JSDoc surface and does
 not substitute for the JavaScript/Doxygen integration evidence governed by
-ADR-018 through ADR-022.
+ADR-018 through ADR-023.
 
 Maintained AWK implementation source is governed by:
 
