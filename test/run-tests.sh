@@ -57,7 +57,7 @@ run_fixture() {
 trap 'rm -rf -- "$TMP_DIR"' EXIT HUP INT TERM
 
 printf '%s\n' 'TAP version 13'
-printf '%s\n' '1..18'
+printf '%s\n' '1..19'
 
 run_fixture 1 pass-through 'ordinary JavaScript passes through unchanged'
 run_fixture 2 jsdoc-param-required 'required JSDoc parameter is translated'
@@ -77,6 +77,7 @@ run_fixture 15 jsdoc-typedef-property 'JSDoc typedef property is translated to a
 run_fixture 16 jsdoc-property-outside-typedef 'JSDoc property outside a governed typedef remains unchanged'
 run_fixture 17 jsdoc-callback-virtual 'named JSDoc callback is translated to a virtual page'
 run_fixture 18 jsdoc-callback-unsupported 'unsupported callback namepath remains unchanged'
+run_fixture 19 jsdoc-type 'canonical JSDoc type annotation passes through unchanged'
 
 if ((failures > 0)); then
   exit 1
