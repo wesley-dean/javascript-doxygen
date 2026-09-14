@@ -1,5 +1,6 @@
-# Generated documentation dependencies and output.
+# Generated dependencies, documentation, and build output.
 /vendor/
+/dist/
 /doc/reference/
 /doc/adr/README.md
 /test/doxygen/out/
