@@ -1,27 +1,39 @@
-# JavaScript Documentation Standard Status
+# JavaScript Documentation Standard Adoption
 
-This repository has not yet adopted a normative JavaScript documentation standard.
+This repository adopts the JavaScript documentation standard materialized at:
 
-The managed shared standards snapshot beneath `doc/standards/` currently contains
-language-specific documentation standards for AWK, Bash, PHP, and Python, but no
-JavaScript documentation standard.  Presence of those standards in the snapshot
-does not make them applicable to maintained JavaScript source.
+`doc/standards/javascript/documentation-standard.md`
 
-ADR-012 therefore keeps the current filter contract deliberately narrow:
-`doxygen-javascript.awk` performs source pass-through only.  The project does not
-yet claim support for any JSDoc tag grammar, type-expression syntax, inline tag,
-module convention, callback form, typedef form, or Doxygen-facing translation.
+That shared standard defines JSDoc comments as the maintained source of truth for
+JavaScript API documentation.  Maintained JavaScript should remain JavaScript-
+native; Doxygen compatibility translation belongs at the documentation-generation
+boundary rather than in a second maintained documentation dialect.
 
-The intended architectural direction is to keep maintained JavaScript documentation
-JavaScript-native and perform any required compatibility translation at the
-Doxygen boundary.  That direction is not a substitute for a normative standard.
-A future JavaScript documentation standard should define the maintained source
-contract before the filter claims corresponding translation behavior.
+The shared standard defines the maintained-source contract.  It does not, by
+itself, expand the implemented capabilities of `doxygen-javascript.awk`.  Filter
+support remains governed by accepted repository-specific ADRs and executable
+regression tests.
+
+ADR-012 therefore continues to govern the current bootstrap implementation:
+`doxygen-javascript.awk` performs source pass-through only until a later accepted
+JavaScript-specific translation decision supersedes that boundary.
+
+The shared JavaScript standard identifies the canonical required-parameter JSDoc
+form as:
+
+```text
+@param {Type} name - Description.
+```
+
+Support for that form, or for optional/default parameters, return values,
+exceptions, yields, typedefs, callbacks, properties, modules, inline tags, or
+complex type expressions, must be claimed only when the filter has corresponding
+accepted governance and executable evidence.
 
 Maintained AWK implementation source is governed by:
 
 `doc/standards/awk/documentation-standard.md`
 
 Shared-standard changes belong upstream in `wesley-dean/coding_standards`.
-Repository-specific exceptions or transition decisions belong in accepted local
+Repository-specific exceptions or translation decisions belong in accepted local
 ADRs rather than edits beneath `doc/standards/`.
