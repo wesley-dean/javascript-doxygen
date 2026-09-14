@@ -21,6 +21,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install AWK implementation
         run: sudo apt-get update && sudo apt-get install -y ${{ matrix.awk }}
+      - name: Run GNU awk lint checks
+        if: matrix.awk == 'gawk'
+        run: make check
       - name: Run TAP regression suite
         run: make test AWK_BIN=${{ matrix.awk }}
 
