@@ -84,10 +84,16 @@ Do not edit files beneath `doc/standards/` locally.  Shared-standard changes
 belong upstream in `wesley-dean/coding_standards`; repository-specific decisions
 belong in this repository's ADRs.
 
-No JavaScript documentation standard has been adopted by this repository yet.
-`doc/documentation-standard.md` records that status.  Until a JavaScript standard
-is adopted and corresponding filter behavior exists, capability claims must remain
-limited to executable evidence.
+Maintained JavaScript documentation is governed by
+`doc/standards/javascript/documentation-standard.md`.  That standard establishes
+JSDoc as the maintained source language and defines the canonical authoring forms.
+Adopting the standard does not imply that every valid JSDoc construct is already
+translated by `doxygen-javascript.awk`; filter capability remains limited to
+behavior supported by accepted local ADRs and executable regression tests.
+
+`doc/documentation-standard.md` records this repository's adoption point and the
+boundary between the shared maintained-source contract and filter-specific
+translation behavior.
 
 Before changing parser boundaries, JSDoc translation behavior, test contracts,
 portability, documentation publication, or release interfaces, review

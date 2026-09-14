@@ -2,14 +2,15 @@
 
 ## Shared coding standards adoption
 
-ADR-011 adopts the complete `coding_standards@v1.0.3` release as a managed,
-verified snapshot beneath `doc/standards/`, with provenance recorded in
-`.codingstandardrc`.  Applicable imported standards are repository governance,
-while accepted local ADRs and explicit local policy remain the mechanism for
-visible refinements or exceptions; imported files are not edited locally.  The
-complete library is committed for inspectability even though presence does not
-imply applicability, and no permanent standards-update machinery is installed.
-See [ADR-011](adr/ADR-011-adopt-shared-coding-standards.md).
+ADR-011 establishes the managed shared-standards model beneath `doc/standards/`,
+with provenance recorded in `.codingstandardrc`.  The current pinned snapshot is
+`coding_standards@v1.0.6`, which adds the shared JavaScript documentation standard
+and its example.  Applicable imported standards are repository governance, while
+accepted local ADRs and explicit local policy remain the mechanism for visible
+refinements or exceptions; imported files are not edited locally.  The complete
+library is committed for inspectability even though presence does not imply
+applicability, and no permanent standards-update machinery is installed.  See
+[ADR-011](adr/ADR-011-adopt-shared-coding-standards.md).
 
 ## JavaScript filter bootstrap and TAP regression contract
 

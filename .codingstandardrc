@@ -1,4 +1,4 @@
 source = "https://github.com/wesley-dean/coding_standards.git"
-version = "coding_standards@v1.0.3"
-sha256 = "df1f6dc0989a84e60737c6030c48a8fe17dc11976a357fa13efc8abff863f159"
+version = "coding_standards@v1.0.6"
+sha256 = "9af68162b64cec5e43a9d020706b415a744cc571a056eb7c3d9aefbff2ceac1f"
 destination = "doc/standards"
