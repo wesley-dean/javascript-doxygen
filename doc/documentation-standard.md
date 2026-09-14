@@ -49,16 +49,35 @@ moves the maintained JSDoc type expression into visible prose:
 @returns Description. Type: Type.
 ```
 
-The filter preserves the type text without validation, normalization, inference,
-or interpretation.  Singular `@return`, untyped `@returns`, typed returns without
-descriptions, continuation lines, and `@yields` remain outside the accepted return
+The filter preserves the return type text without validation, normalization,
+inference, or interpretation.  Singular `@return`, untyped `@returns`, typed
+returns without descriptions, continuation lines, and `@yields` remain outside
+the accepted return translation boundary.
+
+ADR-017 adds the canonical typed-and-described exception form:
+
+```text
+@throws {Type} Description.
+```
+
+Doxygen recognizes `@throws` and expects an exception object immediately after the
+command.  The filter therefore removes the JSDoc braces and preserves the type in
+that native position:
+
+```text
+@throws Type Description.
+```
+
+The supported exception type is a compact, non-empty token containing no
+whitespace.  Description-only `@throws`, type-only `@throws`, throws types with
+whitespace, and continuation records remain outside the accepted exception
 translation boundary.
 
 Unsupported parameter forms remain unchanged.  Dotted property names, optional
-dotted properties, rest parameters, destructured parameters, exceptions, yields,
-typedefs, callbacks, properties, modules, inline tags, and other JSDoc forms must
-be claimed only when the filter has corresponding accepted governance and
-executable evidence.
+dotted properties, rest parameters, destructured parameters, yields, typedefs,
+callbacks, properties, modules, inline tags, and other JSDoc forms must be claimed
+only when the filter has corresponding accepted governance and executable
+evidence.
 
 ## Repository self-documentation
 

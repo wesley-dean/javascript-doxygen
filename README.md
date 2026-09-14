@@ -5,10 +5,10 @@ JavaScript.  The long-term goal is to let JavaScript remain JavaScript-native,
 with JSDoc-style source documentation translated only where Doxygen needs help.
 
 The maintained filter is `doxygen-javascript.awk`.  It currently supports the
-canonical simple-parameter forms governed by ADR-013 and ADR-014, plus canonical
-typed `@returns` records governed by ADR-016.  Unsupported forms remain unchanged.
-The filter does not infer JavaScript semantics or claim a complete
-JavaScript/Doxygen integration.
+canonical simple-parameter forms governed by ADR-013 and ADR-014, canonical typed
+`@returns` records governed by ADR-016, and canonical typed-and-described `@throws`
+records governed by ADR-017.  Unsupported forms remain unchanged.  The filter does
+not infer JavaScript semantics or claim a complete JavaScript/Doxygen integration.
 
 ## Current capability
 
@@ -64,11 +64,25 @@ is translated to:
 @returns Validated configuration owned by the caller. Type: Promise<Configuration>.
 ```
 
+A typed exception contract:
+
+```text
+@throws {TypeError} If the identifier is not a string.
+```
+
+is translated to:
+
+```text
+@throws TypeError If the identifier is not a string.
+```
+
 The maintained JavaScript source remains unchanged.  The filter preserves type and
 default text without interpreting either.  Current default-token support requires
-non-empty text containing neither whitespace nor `]`.  Unsupported forms such as
-dotted property notation, singular `@return`, and untyped `@returns` continue to
-pass through unchanged.
+non-empty text containing neither whitespace nor `]`.  Typed `@throws` support
+requires a compact exception type without whitespace plus a non-empty description.
+Unsupported forms such as dotted property notation, singular `@return`, untyped
+`@returns`, description-only `@throws`, and type-only `@throws` continue to pass
+through unchanged.
 
 Run the filter with:
 
@@ -104,12 +118,14 @@ make test AWK_BIN=mawk
 make test AWK_BIN=gawk
 ```
 
-The current suite proves seven behaviors: ordinary JavaScript passes through
+The current suite proves nine behaviors: ordinary JavaScript passes through
 unchanged; canonical required parameters translate; optional parameters with and
 without compact documented defaults translate; unsupported dotted property
 notation remains visible unchanged; canonical typed `@returns` records translate;
-and singular `@return` remains visible unchanged.  Future documentation
-translations should grow the suite one focused behavior at a time.
+singular `@return` remains visible unchanged; canonical typed-and-described
+`@throws` records translate; and unsupported description-only and type-only
+`@throws` forms remain unchanged.  Future documentation translations should grow
+the suite one focused behavior at a time.
 
 ## Project reference documentation
 
@@ -143,8 +159,8 @@ that those interfaces are supported here.
 
 The following JavaScript-specific capabilities remain deliberately deferred:
 
-- complex JSDoc parameter forms and tags beyond the accepted parameter and typed
-  return contracts;
+- complex JSDoc parameter forms and tags beyond the accepted parameter, typed
+  return, and typed exception contracts;
 - exercising JavaScript source through Doxygen with `doxygen-javascript.awk`;
 - JavaScript/Doxygen integration assertions;
 - generated consumer artifacts and checksums;
@@ -155,7 +171,8 @@ Those capabilities should be enabled only after their JavaScript-specific
 contracts are governed and tested.  ADR-012 records the bootstrap boundary,
 ADR-013 governs required parameters, ADR-014 governs optional parameters, ADR-015
 distinguishes supported project self-documentation from deferred JavaScript/Doxygen
-integration, and ADR-016 governs canonical typed return translation.
+integration, ADR-016 governs canonical typed return translation, and ADR-017
+governs canonical typed exception translation.
 
 ## Coding standards and governance
 

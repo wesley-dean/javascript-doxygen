@@ -10,11 +10,12 @@ dialect.
 The maintained filter is `doxygen-javascript.awk`.
 
 The current implementation translates only the accepted simple-parameter JSDoc
-forms governed by ADR-013 and ADR-014 plus canonical typed `@returns` records
-governed by ADR-016.  Unsupported JSDoc constructs remain visible unchanged.  Do
-not claim broader JSDoc translation, JavaScript semantic analysis,
-JavaScript/Doxygen integration, generated consumer artifacts, or release support
-until executable evidence and governing decisions exist.
+forms governed by ADR-013 and ADR-014, canonical typed `@returns` records governed
+by ADR-016, and canonical typed-and-described `@throws` records governed by
+ADR-017.  Unsupported JSDoc constructs remain visible unchanged.  Do not claim
+broader JSDoc translation, JavaScript semantic analysis, JavaScript/Doxygen
+integration, generated consumer artifacts, or release support until executable
+evidence and governing decisions exist.
 
 ## Governing Documentation
 
@@ -62,6 +63,8 @@ ADR-012 establishes the JavaScript filter and TAP regression boundary.  ADR-013
 adds canonical required-parameter translation.  ADR-014 adds canonical optional
 parameters with and without compact documented defaults.  ADR-016 adds canonical
 typed `@returns` translation while preserving the `@returns` command itself.
+ADR-017 adds canonical typed-and-described `@throws` translation by removing the
+JSDoc type braces and preserving Doxygen's native exception-object position.
 
 Supported parameter names remain simple JavaScript identifiers.  The filter keeps
 type expressions and supported optional defaults as textual documentation data
@@ -69,11 +72,15 @@ rather than interpreting them as JavaScript semantics.  Compact defaults must be
 non-empty and contain neither whitespace nor `]` in the current grammar.
 
 Canonical typed returns use `@returns {Type} Description.` and are emitted as
-`@returns Description. Type: Type.`.  The singular JSDoc synonym `@return`,
-untyped returns, typed returns without descriptions, continuation records,
-`@yields`, dotted properties, optional dotted properties, rest parameters,
-destructured parameter documentation, and one-line JSDoc blocks remain unsupported
-and should pass through visibly.
+`@returns Description. Type: Type.`.  Canonical typed exceptions use
+`@throws {Type} Description.` with a compact non-whitespace exception type and are
+emitted as `@throws Type Description.`.
+
+The singular JSDoc synonym `@return`, untyped returns, typed returns without
+descriptions, description-only `@throws`, type-only `@throws`, throws types with
+whitespace, continuation records, `@yields`, dotted properties, optional dotted
+properties, rest parameters, destructured parameter documentation, and one-line
+JSDoc blocks remain unsupported and should pass through visibly.
 
 Future JSDoc translation should remain narrow and evidence-driven.  Prefer visible
 unsupported syntax to speculative semantic claims.  Do not add JavaScript parsing,
@@ -103,10 +110,11 @@ make test AWK_BIN=gawk
 The current suite proves ordinary source pass-through; required-parameter
 translation; optional-parameter translation with and without compact documented
 defaults; visible pass-through of unsupported dotted property notation; canonical
-typed `@returns` translation; and visible pass-through of singular `@return`.
-Add a focused fixture and expected output when adding each new supported
-translation behavior.  Tests should protect externally observable behavior rather
-than internal helper structure.
+typed `@returns` translation; visible pass-through of singular `@return`;
+canonical typed-and-described `@throws` translation; and visible pass-through of
+description-only and type-only throws forms.  Add a focused fixture and expected
+output when adding each new supported translation behavior.  Tests should protect
+externally observable behavior rather than internal helper structure.
 
 ## Project Self-Documentation
 
