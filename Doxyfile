@@ -13,7 +13,7 @@ INPUT                  = README.md \
                          test/run-tests.sh \
                          doc/adr \
                          doc/decisions.md \
-                         doc/documentation-standard.md
+                         doc/standards/javascript/documentation-standard.md
 RECURSIVE              = YES
 FILE_PATTERNS          = *.awk \
                          *.sh \
