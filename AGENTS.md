@@ -29,9 +29,9 @@ the accepted governance and executable evidence.
 
 ## Governing Documentation
 
-Before changing the repository, review `README.md`, this file,
-`doc/documentation-standard.md`, the applicable files under `doc/standards/`,
-every ADR in `doc/adr/*.md`, and `doc/decisions.md`.
+Before changing the repository, review `README.md`, this file, the applicable
+files under `doc/standards/`, every ADR in `doc/adr/*.md`, and
+`doc/decisions.md`.
 
 Accepted ADRs are governance.  Consequential parser, interface, portability,
 compatibility, documentation-publication, integration, consumer-configuration,
