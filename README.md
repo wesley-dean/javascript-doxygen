@@ -495,10 +495,6 @@ translated or otherwise supported by `doxygen-javascript.awk`; filter capability
 remains limited to behavior supported by accepted local ADRs and executable
 regression tests.
 
-`doc/documentation-standard.md` records this repository's adoption point and the
-boundary between the shared maintained-source contract and filter-specific
-translation or consumer-configuration behavior.
-
 Before changing parser boundaries, JSDoc translation behavior, native-compatible
 or consumer-alias support claims, test contracts, portability, documentation
 publication, consumer Doxygen configuration, virtual-type representation, build
