@@ -4,7 +4,7 @@
 
 ADR-011 establishes the managed shared-standards model beneath `doc/standards/`,
 with provenance recorded in `.codingstandardrc`.  The current pinned snapshot is
-`coding_standards@v1.0.9`, which includes the shared JavaScript documentation standard,
+`coding_standards@v2.1.0`, which includes the shared JavaScript documentation standard,
 its example, and the cross-cutting development workflow and backlog governance standard.  Applicable imported standards are repository governance, while
 accepted local ADRs and explicit local policy remain the mechanism for visible
 refinements or exceptions; imported files are not edited locally.  The complete
