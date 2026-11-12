@@ -4,7 +4,7 @@
 
 ADR-011 establishes the managed shared-standards model beneath `doc/standards/`,
 with provenance recorded in `.codingstandardrc`.  The current pinned snapshot is
-`coding_standards@v2.1.0`, which includes the shared JavaScript documentation standard,
+`coding_standards@v3.2.0`, which includes the shared JavaScript documentation standard,
 its example, and the cross-cutting development workflow and backlog governance standard.  Applicable imported standards are repository governance, while
 accepted local ADRs and explicit local policy remain the mechanism for visible
 refinements or exceptions; imported files are not edited locally.  The complete
@@ -541,3 +541,16 @@ See
 [ADR-023](adr/ADR-023-represent-jsdoc-callbacks-as-virtual-pages.md),
 [ADR-024](adr/ADR-024-preserve-jsdoc-type-with-consumer-alias.md), and
 [ADR-025](adr/ADR-025-build-javascript-distribution-artifacts.md).
+
+## Consolidated GitHub Actions Dependabot Version-Update Maintenance
+
+ADR-028 retains the weekly schedule and seven-day cooldown while replacing the
+minor/patch-only GitHub Actions routine-version group with a wildcard group
+for eligible major, minor, and patch version updates. Security updates remain
+independent, major-containing groups are excluded from the existing non-major
+auto-merge path, and maintainers must review every dependency's compatibility
+and permission implications. Existing open Dependabot PRs remain until their
+updates are demonstrably superseded and validated. Neither JavaScript filter
+behavior nor released artifacts or CI authorization changes.
+
+See [ADR-028](adr/ADR-028-consolidate-github-actions-dependabot-maintenance.md).
