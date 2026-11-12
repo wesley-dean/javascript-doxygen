@@ -501,6 +501,10 @@ publication, consumer Doxygen configuration, virtual-type representation, build
 artifacts, or release interfaces, review `AGENTS.md`, the applicable imported
 standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.
 
+## Dependabot maintenance
+
+GitHub Actions routine version updates follow a weekly schedule with a seven-day cooldown. Eligible major, minor, and patch changes are grouped into one wildcard version-update PR when resolution permits. Security updates remain separate; a group containing a major upgrade must receive targeted manual review and remains ineligible for the existing non-major-only auto-merge path. Existing Dependabot PRs are not implicitly superseded. See [ADR-028](doc/adr/ADR-028-consolidate-github-actions-dependabot-maintenance.md).
+
 ## License
 
 This project is licensed under the Creative Commons License 1.0 Universal License.
