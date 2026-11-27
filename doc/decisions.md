@@ -554,3 +554,17 @@ updates are demonstrably superseded and validated. Neither JavaScript filter
 behavior nor released artifacts or CI authorization changes.
 
 See [ADR-028](adr/ADR-028-consolidate-github-actions-dependabot-maintenance.md).
+
+## ADR-029: Migrate Routine Dependency Updates to Central Renovate
+
+The repository enrolls in Jenkins-hosted Renovate with a minimal root
+`renovate.json`, disabling routine scheduled Dependabot version proposals
+while preserving separate security updates. ADR-029 partially supersedes
+ADR-028's active Dependabot scheduling and prior rule to retain routine
+PRs until replaced; security, supply-chain review, and application/release
+contracts remain authoritative. Verified immutable action references
+remain pinned; unverified references can temporarily use a version ref
+pending Renovate re-pinning, with the risk documented for review. Existing
+human code-owner approval and required checks remain in force.
+
+See [ADR-029](adr/ADR-029-migrate-routine-updates-to-renovate.md).

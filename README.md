@@ -501,9 +501,16 @@ publication, consumer Doxygen configuration, virtual-type representation, build
 artifacts, or release interfaces, review `AGENTS.md`, the applicable imported
 standards, all ADRs in `doc/adr/`, and `doc/decisions.md`.
 
-## Dependabot maintenance
+## Dependency maintenance
 
-GitHub Actions routine version updates follow a weekly schedule with a seven-day cooldown. Eligible major, minor, and patch changes are grouped into one wildcard version-update PR when resolution permits. Security updates remain separate; a group containing a major upgrade must receive targeted manual review and remains ineligible for the existing non-major-only auto-merge path. Existing Dependabot PRs are not implicitly superseded. See [ADR-028](doc/adr/ADR-028-consolidate-github-actions-dependabot-maintenance.md).
+Routine version-update PRs are centrally managed through the Jenkins Renovate
+runner, enrolled using root `renovate.json`. The existing GitHub Actions
+Dependabot ecosystem sets `open-pull-requests-limit: 0` to disable routine
+scheduling while retaining separate security-update processing. The
+`dependabot[bot]`-scoped non-major auto-merge workflow remains for security
+PRs; Renovate remains subject to required checks and human code-owner review.
+Routine Dependabot PRs are retired with migration links. See
+[ADR-029](doc/adr/ADR-029-migrate-routine-updates-to-renovate.md).
 
 ## License
 
